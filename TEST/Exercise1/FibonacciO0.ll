@@ -3,17 +3,19 @@ source_filename = "Fibonacci.c"
 target datalayout = "e-m:o-i64:64-i128:128-n32:64-S128"
 target triple = "arm64-apple-macosx14.0.0"
 
+; Print global declariation
 @__stdoutp = external global ptr, align 8
 @.str = private unnamed_addr constant [9 x i8] c"f(0) = 0\00", align 1
 @.str.1 = private unnamed_addr constant [9 x i8] c"f(1) = 1\00", align 1
 @.str.2 = private unnamed_addr constant [22 x i8] c"f(%d) = f(%d) + f(%d)\00", align 1
 
 ; Function Attrs: noinline nounwind optnone ssp uwtable(sync)
-define i32 @printf(ptr noundef %0, ...) #0 !dbg !9 {
-  %2 = alloca ptr, align 8
-  %3 = alloca i32, align 4
-  %4 = alloca ptr, align 8
-  store ptr %0, ptr %2, align 8
+define i32 @printf(ptr noundef %0, ...) #0 !dbg !9 {      ; printf(ptr %0, ...)
+  ; %1 = BB1
+  %2 = alloca ptr, align 8                        ; ptr %2  
+  %3 = alloca i32, align 4                        ; int %3
+  %4 = alloca ptr, align 8                        ; ptr %4
+  store ptr %0, ptr %2, align 8                   ; %2 = %0
   call void @llvm.va_start(ptr %4), !dbg !12
   %5 = load ptr, ptr @__stdoutp, align 8, !dbg !13
   %6 = load ptr, ptr %2, align 8, !dbg !14
@@ -34,28 +36,32 @@ declare i32 @vfprintf(ptr noundef, ptr noundef, ptr noundef) #2
 declare void @llvm.va_end(ptr) #1
 
 ; Function Attrs: noinline nounwind optnone ssp uwtable(sync)
-define i32 @Fibonacci(i32 noundef %0) #0 !dbg !21 {
-  %2 = alloca i32, align 4
-  %3 = alloca i32, align 4
-  store i32 %0, ptr %3, align 4
-  %4 = load i32, ptr %3, align 4, !dbg !22
-  %5 = icmp eq i32 %4, 0, !dbg !23
-  br i1 %5, label %6, label %8, !dbg !22
+define i32 @Fibonacci(i32 noundef %0) #0 !dbg !21 {     ; int Fibonacci(int %0) -> int Fibonacci(int n)
+  ; %1 = BB1
+  %2 = alloca i32, align 4                        ; int %2
+  %3 = alloca i32, align 4                        ; int %3
+  store i32 %0, ptr %3, align 4                   ; %3 = %0 -> %3 = n
+  %4 = load i32, ptr %3, align 4, !dbg !22        ; %4 = %3 -> %4 = n
+  %5 = icmp eq i32 %4, 0, !dbg !23                ; %5 = true if n == 0 else false
+  br i1 %5, label %6, label %8, !dbg !22          ; jump based on %5 to label 6 or label 8
 
 6:                                                ; preds = %1
-  %7 = call i32 (ptr, ...) @printf(ptr noundef @.str), !dbg !24
-  store i32 0, ptr %2, align 4, !dbg !25
-  br label %27, !dbg !25
+  ; %6 = BB2
+  %7 = call i32 (ptr, ...) @printf(ptr noundef @.str), !dbg !24     ;%7 = printf(.str) -> %7 = printf("f(0) = 0")
+  store i32 0, ptr %2, align 4, !dbg !25          ; %2 = 0      
+  br label %27, !dbg !25                          ; unconditional jump to label 27
 
 8:                                                ; preds = %1
-  %9 = load i32, ptr %3, align 4, !dbg !26
-  %10 = icmp eq i32 %9, 1, !dbg !27
-  br i1 %10, label %11, label %13, !dbg !26
+  ; %8 = BB3
+  %9 = load i32, ptr %3, align 4, !dbg !26        ; %9 = %3 -> %9 = n
+  %10 = icmp eq i32 %9, 1, !dbg !27               ; %10 = true if n == 1 else false
+  br i1 %10, label %11, label %13, !dbg !26       ; jump based on %10 to label 11 or label 13
 
 11:                                               ; preds = %8
-  %12 = call i32 (ptr, ...) @printf(ptr noundef @.str.1), !dbg !28
-  store i32 1, ptr %2, align 4, !dbg !29
-  br label %27, !dbg !29
+  ; %11 = BB4
+  %12 = call i32 (ptr, ...) @printf(ptr noundef @.str.1), !dbg !28    ; %12 = printf(.str.1) -> %12 = printf("f(1) = 1")
+  store i32 1, ptr %2, align 4, !dbg !29          ; %2 = 1
+  br label %27, !dbg !29                          
 
 13:                                               ; preds = %8
   %14 = load i32, ptr %3, align 4, !dbg !30
