@@ -1,4 +1,4 @@
-#### Exercise 2 of my middle-end compilers class
+### Exercise 2 of my middle-end compilers class
 Objective is to add a new custom pass to opt.
 
 First step is to create the pass by writing a new `TestPass.h` in `SRC/llvm/include/llvm/Transforms/Utils/`.
