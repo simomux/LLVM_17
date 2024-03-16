@@ -9,16 +9,16 @@ target triple = "arm64-apple-macosx14.0.0"
 @.str.2 = private unnamed_addr constant [22 x i8] c"f(%d) = f(%d) + f(%d)\00", align 1
 
 ; Function Attrs: nofree nounwind ssp uwtable(sync)
-define i32 @printf(ptr nocapture noundef readonly %0, ...) local_unnamed_addr #0 !dbg !9 {
-  %2 = alloca ptr, align 8
-  call void @llvm.lifetime.start.p0(i64 8, ptr nonnull %2) #4, !dbg !13
-  call void @llvm.va_start(ptr nonnull %2), !dbg !14
-  %3 = load ptr, ptr @__stdoutp, align 8, !dbg !15, !tbaa !16
-  %4 = load ptr, ptr %2, align 8, !dbg !20, !tbaa !16
-  %5 = call i32 @vfprintf(ptr noundef %3, ptr noundef %0, ptr noundef %4), !dbg !21
-  call void @llvm.va_end(ptr nonnull %2), !dbg !22
-  call void @llvm.lifetime.end.p0(i64 8, ptr nonnull %2) #4, !dbg !23
-  ret i32 %5, !dbg !24
+define i32 @printf(ptr nocapture noundef readonly %0, ...) local_unnamed_addr #0 !dbg !9 {        ; printf(%0, ...) -> printf(*format, ...)
+  %2 = alloca ptr, align 8                                                                        ; ptr %2 -> args        
+  call void @llvm.lifetime.start.p0(i64 8, ptr nonnull %2) #4, !dbg !13                           ; lifetime.start(8, %2) -> lifetime.start(8, args)
+  call void @llvm.va_start(ptr nonnull %2), !dbg !14                                              ; va_start(%2) -> va_start(args)
+  %3 = load ptr, ptr @__stdoutp, align 8, !dbg !15, !tbaa !16                                     ; ptr %3 = @__stdoutp
+  %4 = load ptr, ptr %2, align 8, !dbg !20, !tbaa !16                                             ; ptr %4 = *args
+  %5 = call i32 @vfprintf(ptr noundef %3, ptr noundef %0, ptr noundef %4), !dbg !21               ; %5 = vfprintf(%3, %0, %4) -> ret = vfprintf(@__stdoutp, format, args)
+  call void @llvm.va_end(ptr nonnull %2), !dbg !22                                                ; va_end(%2) -> va_end(args)
+  call void @llvm.lifetime.end.p0(i64 8, ptr nonnull %2) #4, !dbg !23                             ; lifetime.end(8, %2) -> lifetime.end(8, args)
+  ret i32 %5, !dbg !24                                                                            ; return %5 -> return ret
 }
 
 ; Function Attrs: argmemonly mustprogress nocallback nofree nosync nounwind willreturn
@@ -39,7 +39,7 @@ declare void @llvm.lifetime.end.p0(i64 immarg, ptr nocapture) #1
 ; Function Attrs: nofree nounwind ssp uwtable(sync)
 define i32 @Fibonacci(i32 noundef %0) local_unnamed_addr #0 !dbg !25 {
   ; %1 = BB1
-  br label %2, !dbg !26
+  br label %2, !dbg !26                           ; unconditional jump to BB2
 
 2:                                                ; preds = %5, %1
   ; %2 = BB2

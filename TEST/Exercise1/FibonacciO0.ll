@@ -10,21 +10,21 @@ target triple = "arm64-apple-macosx14.0.0"
 @.str.2 = private unnamed_addr constant [22 x i8] c"f(%d) = f(%d) + f(%d)\00", align 1
 
 ; Function Attrs: noinline nounwind optnone ssp uwtable(sync)
-define i32 @printf(ptr noundef %0, ...) #0 !dbg !9 {      ; printf(ptr %0, ...)
+define i32 @printf(ptr noundef %0, ...) #0 !dbg !9 {      ; int printf(ptr %0, ...) = int printf(*format, ...)
   ; %1 = BB1
-  %2 = alloca ptr, align 8                        ; ptr %2  
-  %3 = alloca i32, align 4                        ; int %3
-  %4 = alloca ptr, align 8                        ; ptr %4
-  store ptr %0, ptr %2, align 8                   ; %2 = %0
-  call void @llvm.va_start(ptr %4), !dbg !12
-  %5 = load ptr, ptr @__stdoutp, align 8, !dbg !13
-  %6 = load ptr, ptr %2, align 8, !dbg !14
-  %7 = load ptr, ptr %4, align 8, !dbg !15
-  %8 = call i32 @vfprintf(ptr noundef %5, ptr noundef %6, ptr noundef %7), !dbg !16
-  store i32 %8, ptr %3, align 4, !dbg !17
-  call void @llvm.va_end(ptr %4), !dbg !18
-  %9 = load i32, ptr %3, align 4, !dbg !19
-  ret i32 %9, !dbg !20
+  %2 = alloca ptr, align 8                        ; ptr %2
+  %3 = alloca i32, align 4                        ; int %3 -> int ret
+  %4 = alloca ptr, align 8                        ; ptr %4 -> va_list args
+  store ptr %0, ptr %2, align 8                   ; %2 = %0 -> %2 = format
+  call void @llvm.va_start(ptr %4), !dbg !12          ; va_start(%4)
+  %5 = load ptr, ptr @__stdoutp, align 8, !dbg !13    ; %5 = @__stdoutp -> %5 = stdout
+  %6 = load ptr, ptr %2, align 8, !dbg !14        ; %6 = %2 -> %6 = format
+  %7 = load ptr, ptr %4, align 8, !dbg !15        ; %7 = %4 -> %7 = args
+  %8 = call i32 @vfprintf(ptr noundef %5, ptr noundef %6, ptr noundef %7), !dbg !16     ; %8 = vfprintf(%5, %6, %7) -> %8 = vfprintf(stdout, format, args)
+  store i32 %8, ptr %3, align 4, !dbg !17         ; %3 = %8 -> %3 = ret
+  call void @llvm.va_end(ptr %4), !dbg !18        ; va_end(%4)
+  %9 = load i32, ptr %3, align 4, !dbg !19        ; %9 = %3 -> %9 = ret
+  ret i32 %9, !dbg !20                         ; return %9 -> return ret
 }
 
 ; Function Attrs: nocallback nofree nosync nounwind willreturn
@@ -61,7 +61,7 @@ define i32 @Fibonacci(i32 noundef %0) #0 !dbg !21 {     ; int Fibonacci(int %0) 
   ; %11 = BB4
   %12 = call i32 (ptr, ...) @printf(ptr noundef @.str.1), !dbg !28    ; %12 = printf(.str.1) -> %12 = printf("f(1) = 1")
   store i32 1, ptr %2, align 4, !dbg !29          ; %2 = 1
-  br label %27, !dbg !29                          
+  br label %27, !dbg !29                          ; unconditional jump to label 27
 
 13:                                               ; preds = %8
   ; %13 = BB5
