@@ -15,11 +15,6 @@ In the end, you can run:
 ```
 opt -passes=testpass TEST/Exercise1/LoopO2.ll –o LoopTestPassO2.ll
 ```
-The output should be:
-```
-Questa funzione si chiama g_incr
-Questa funzione si chiama loop
-```
 
 
 ### Part 2:
