@@ -1,7 +1,6 @@
 // FIle needs to be pasted in SRC/llvm/include/llvm/Transforms/Utils
 // File needs to be added to SRC/llvm/lib/Passes/PassBuilder.cpp by adding '#include "llvm/Transforms/Utils/TestPass.h"' in alphabetical order
 
-
 #ifndef LLVM_TRANSFORMS_TESTPASS_H
 #define LLVM_TRANSFORMS_TESTPASS_H
 
@@ -10,7 +9,11 @@
 namespace llvm {
     class TestPass : public PassInfoMixin<TestPass> {
     public:
-        PreservedAnalyses run(Function &F, FunctionAnalysisManager &AM);
+        // Function version of pass
+        // PreservedAnalyses run(Function &F, FunctionAnalysisManager &AM);
+
+        // Module version of pass
+        PreservedAnalyses run(Module &M, ModuleAnalysisManager &AM);
     };
 } // namespace llvm
 

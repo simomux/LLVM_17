@@ -25,3 +25,21 @@ List of functionalities:
 - The pass must print the number of call instructions for each function.
 - The pass must print the number of Basic Blocks (BB) for each function.
 - The pass must print the number of instructions for each function.
+
+
+### Part 3:
+#### Convert the function pass to a module pass
+
+First adapt `TestPass.h` to crate a module pass, by passing the module and the analyzer in the run method.
+
+Then change the actual run method code in `TestPass.cpp`, making it loop on every funcion of the module.
+
+Finally change `PassRegistry.def` by removing from the function pass block:
+```
+FUNCTION_PASS("testpass", TestPass())
+```
+
+And adding to the Module pass block in alphabetical order:
+```
+MODULE_PASS("testpass", TestPass())
+```
