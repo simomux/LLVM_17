@@ -2,3 +2,4 @@ SRC/
 BUILD/
 INSTALL/
 *.DS_Store
+*.vscode
