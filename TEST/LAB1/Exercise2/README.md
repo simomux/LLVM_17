@@ -28,7 +28,7 @@ List of functionalities:
 
 
 ### Part 3:
-#### Convert the function pass to a module pass
+#### Convert the function pass to a module pass
 
 First adapt `TestPass.h` to crate a module pass, by passing the module and the analyzer in the run method.
 
