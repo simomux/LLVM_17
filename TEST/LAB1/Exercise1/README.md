@@ -1,4 +1,4 @@
-### Exercise 1 of my middle-end compilers class
+## Exercise 1 LAB 1 of my middle-end compilers class
 First exercise requires compile and work on 2 .c files given by the professor.
 
 To compile the c files:

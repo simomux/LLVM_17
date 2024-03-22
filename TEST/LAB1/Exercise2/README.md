@@ -1,4 +1,4 @@
-## Exercise 2 of My Middle-End Compilers Class
+## Exercise 2 LAB 1 of My Middle-End Compilers Class
 ### Part 1:
 #### The objective is to add a new custom pass to opt.
 
