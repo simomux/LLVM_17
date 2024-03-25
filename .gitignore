@@ -3,3 +3,4 @@ BUILD/
 INSTALL/
 *.DS_Store
 *.vscode
+*.bc
