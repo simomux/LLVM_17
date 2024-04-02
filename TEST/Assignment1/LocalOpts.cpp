@@ -121,9 +121,11 @@ bool strenghtReductionMul(Instruction &I) {
   return false;
 }
 
-
+/// @brief Check for algebric identities optimizations in the IR for sum and subtraction
+/// @param I Instruction to be optimized
+/// @return True if there was any change in the IR
 bool algebricIdentitySumSub(Instruction &I) {
-  // x+0 or 0+x
+  // Check if the sum has a constant operand == 0
   if (I.getOpcode() == Instruction::Add){
     if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
       if (secondConst->getZExtValue() == 0) {
@@ -131,7 +133,7 @@ bool algebricIdentitySumSub(Instruction &I) {
         I.replaceAllUsesWith(I.getOperand(0));
         return true;
       }
-    }else if (ConstantInt *firstConst = dyn_cast<ConstantInt>(I.getOperand(0))){
+    } else if (ConstantInt *firstConst = dyn_cast<ConstantInt>(I.getOperand(0))) {
       if (firstConst->getZExtValue() == 0) {
         outs() << "Candidato per essere rimossa Somma inutile \n";
         I.replaceAllUsesWith(I.getOperand(1));
@@ -139,17 +141,11 @@ bool algebricIdentitySumSub(Instruction &I) {
       }
     }
     
-  }else if (I.getOpcode() == Instruction::Sub){
+  } else if (I.getOpcode() == Instruction::Sub) {
     if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
       if (secondConst->getZExtValue() == 0) {
         outs() << "Candidato per essere rimossa Sottrazione inutile \n";
         I.replaceAllUsesWith(I.getOperand(0));
-        return true;
-      }
-    }else if (ConstantInt *firstConst = dyn_cast<ConstantInt>(I.getOperand(0))){
-      if (firstConst->getZExtValue() == 0) {
-        outs() << "Candidato per essere rimossa Sottrazione inutile \n";
-        I.replaceAllUsesWith(I.getOperand(1));
         return true;
       }
     }
@@ -158,12 +154,10 @@ bool algebricIdentitySumSub(Instruction &I) {
   return false;
 }
 
-/// @brief Chechk for algebric identities optimizations in the IR
+/// @brief Chechk for algebric identities optimizations in the IR for multiplication and division
 /// @param I Instruction to be optimized
 /// @return True if there was any change in the IR
 bool algebricIdentityMulDiv(Instruction &I) {
-  //x*1 or 1*x
-  return false;
   // Check if the multiplication has a constant operand == 1
   if (Instruction::Mul == I.getOpcode()) {
     if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
@@ -194,7 +188,8 @@ bool runOnBasicBlock(BasicBlock &B) {
   for (auto &I : B) {
       switch(I.getOpcode()){
         case Instruction::Add:
-        case Instruction::Sub: if(algebricIdentitySumSub(I)){ modified = true; }
+        case Instruction::Sub:
+          if(algebricIdentitySumSub(I)){ modified = true; }
           break;
         case Instruction::Mul:
         case Instruction::SDiv:
