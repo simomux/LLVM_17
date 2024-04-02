@@ -25,16 +25,18 @@ bool strenghtReductionMul(Instruction &I) {
     // Check if second operand is a constant and if it's a power of 2
     // Gives priority to the second operand, since IR syntax states that if it's just a constant it should be on the right-most side (pass can trasnform even multiplication with a constant on the left side, the right side is the priority in case both operands are constants power of 2)
     if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
-      if (secondConst->getValue().isPowerOf2()) {
+      if (secondConst->getValue() != 1) {
+        if (secondConst->getValue().isPowerOf2()) {
           powerOfTwoOp = secondConst;
-      } else if ((secondConst->getValue()-1).isPowerOf2()) {
-          powerOfTwoOp = secondConst;
-          offset = -1;
-          outs() << "Operand rounded to closest power of 2 by -1: " << secondConst->getValue()-1 << "\n";
-      } else if ((secondConst->getValue()+1).isPowerOf2()) {
-          powerOfTwoOp = secondConst;
-          offset = 1;
-          outs() << "Operand rounded to closest power of 2 by +1: " << secondConst->getValue()+1 << "\n";
+        } else if ((secondConst->getValue()-1).isPowerOf2()) {
+            powerOfTwoOp = secondConst;
+            offset = -1;
+            outs() << "Operand rounded to closest power of 2 by -1: " << secondConst->getValue()-1 << "\n";
+        } else if ((secondConst->getValue()+1).isPowerOf2()) {
+            powerOfTwoOp = secondConst;
+            offset = 1;
+            outs() << "Operand rounded to closest power of 2 by +1: " << secondConst->getValue()+1 << "\n";
+        }
       }
     }
 
@@ -42,20 +44,22 @@ bool strenghtReductionMul(Instruction &I) {
     // If second operator is a constant and already a power of 2, we don't need to check the first one
     if (powerOfTwoOp == nullptr) {
       if (ConstantInt *firstConst = dyn_cast<ConstantInt>(I.getOperand(0))) {
-        if (firstConst->getValue().isPowerOf2()) {
+        if (firstConst->getValue() != 1) {
+          if (firstConst->getValue().isPowerOf2()){
           powerOfTwoOp = firstConst;
           swap = true;
-        } else if ((firstConst->getValue()-1).isPowerOf2()) {
-          powerOfTwoOp = firstConst;
-          offset = -1;
-          swap = true;
-          outs() << "Operand rounded to closest power of 2 by -1: " << firstConst->getValue()-1 << "\n";
-        } else if ((firstConst->getValue()+1).isPowerOf2()) {
-          powerOfTwoOp = firstConst;
-          offset = 1;
-          swap = true;
-          outs() << "Operand rounded to closest power of 2 by +1: " << firstConst->getValue()+1 << "\n";
-        }
+          } else if ((firstConst->getValue()-1).isPowerOf2()) {
+            powerOfTwoOp = firstConst;
+            offset = -1;
+            swap = true;
+            outs() << "Operand rounded to closest power of 2 by -1: " << firstConst->getValue()-1 << "\n";
+          } else if ((firstConst->getValue()+1).isPowerOf2()) {
+            powerOfTwoOp = firstConst;
+            offset = 1;
+            swap = true;
+            outs() << "Operand rounded to closest power of 2 by +1: " << firstConst->getValue()+1 << "\n";
+          }
+        }  
       }
     }
 
@@ -101,7 +105,7 @@ bool strenghtReductionMul(Instruction &I) {
     outs() << "\nFound a division: " << I << "\n";
     // Just need to check if second operand is a constant power of 2
     if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
-      if (secondConst->getValue().isPowerOf2()) {
+      if (secondConst->getValue().isPowerOf2() && secondConst->getValue() != 1) {
         ConstantInt *shiftConst = ConstantInt::get(secondConst->getType(), (secondConst->getValue()).exactLogBase2());
         outs() << "Using opreand with value of " << secondConst->getValue() << "\n";
         Instruction *NewInst = BinaryOperator::Create(Instruction::AShr, I.getOperand(0), shiftConst);
@@ -131,8 +135,33 @@ bool algebricIdentitySumSub(Instruction &I) {
   
 }
 
+/// @brief Chechk for algebric identities optimizations in the IR
+/// @param I Instruction to be optimized
+/// @return True if there was any change in the IR
 bool algebricIdentityMulDiv(Instruction &I) {
-  //x*1 or 1*x
+  // Check if the multiplication has a constant operand == 1
+  if (Instruction::Mul == I.getOpcode()) {
+    if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
+      if (secondConst->getValue() == 1) {
+        I.replaceAllUsesWith(I.getOperand(0));
+        return true;
+      }
+    } else if (ConstantInt *firstConst = dyn_cast<ConstantInt>(I.getOperand(0))) {
+      if (firstConst->getValue() == 1) {
+        I.replaceAllUsesWith(I.getOperand(1));
+        return true;
+      }
+    }
+  // Check if the division has the second operand == 1
+  } else if (Instruction::SDiv == I.getOpcode()) {
+    if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
+      if (secondConst->getValue() == 1) {
+        I.replaceAllUsesWith(I.getOperand(0));
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 bool runOnBasicBlock(BasicBlock &B) {
@@ -140,14 +169,13 @@ bool runOnBasicBlock(BasicBlock &B) {
   for (auto &I : B) {
       switch(I.getOpcode()){
         case Instruction::Add:
-
-          break;
         case Instruction::Sub:
 
           break;
         case Instruction::Mul:
         case Instruction::SDiv:
-          if(strenghtReductionMul(I)) { modified = true; }
+          if (algebricIdentityMulDiv(I)) { modified = true; }
+          if (strenghtReductionMul(I)) { modified = true; }
           break;
       }
   }
