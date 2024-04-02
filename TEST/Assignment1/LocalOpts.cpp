@@ -120,19 +120,47 @@ bool strenghtReductionMul(Instruction &I) {
 
 bool algebricIdentitySumSub(Instruction &I) {
   // x+0 or 0+x
-  if (I.getOpcode() == Instruction::Add)
-  {
-    /* code */
-  }else if (I.getOpcode() == Instruction::Sub)
-  {
-    /* code */
+  if (I.getOpcode() == Instruction::Add){
+    if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
+      if (secondConst->getZExtValue() == 0) {
+        //rimuovi l'istruzione
+        outs() << "Candidato per essere rimossa Somma inutile \n";
+        I.replaceAllUsesWith(I.getOperand(0));
+        return true;
+      }
+    }else if (ConstantInt *firstConst = dyn_cast<ConstantInt>(I.getOperand(0))){
+      if (firstConst->getZExtValue() == 0) {
+        //rimuovi l'istruzione
+        outs() << "Candidato per essere rimossa Somma inutile \n";
+        I.replaceAllUsesWith(I.getOperand(1));
+        return true;
+      }
+    }
+    
+  }else if (I.getOpcode() == Instruction::Sub){
+    if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
+      if (secondConst->getZExtValue() == 0) {
+        //rimuovi l'istruzione
+        outs() << "Candidato per essere rimossa Sottrazione inutile \n";
+        I.replaceAllUsesWith(I.getOperand(0));
+        return true;
+      }
+    }else if (ConstantInt *firstConst = dyn_cast<ConstantInt>(I.getOperand(0))){
+      if (firstConst->getZExtValue() == 0) {
+        //rimuovi l'istruzione
+        outs() << "Candidato per essere rimossa Sottrazione inutile \n";
+        I.replaceAllUsesWith(I.getOperand(1));
+        return true;
+      }
+    }
   }
   
-  
+  return false;
 }
 
 bool algebricIdentityMulDiv(Instruction &I) {
   //x*1 or 1*x
+  return false;
 }
 
 bool runOnBasicBlock(BasicBlock &B) {
@@ -140,10 +168,7 @@ bool runOnBasicBlock(BasicBlock &B) {
   for (auto &I : B) {
       switch(I.getOpcode()){
         case Instruction::Add:
-
-          break;
-        case Instruction::Sub:
-
+        case Instruction::Sub: if(algebricIdentitySumSub(I)){ modified = true; }
           break;
         case Instruction::Mul:
         case Instruction::SDiv:
