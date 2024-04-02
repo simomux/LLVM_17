@@ -127,14 +127,12 @@ bool algebricIdentitySumSub(Instruction &I) {
   if (I.getOpcode() == Instruction::Add){
     if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
       if (secondConst->getZExtValue() == 0) {
-        //rimuovi l'istruzione
         outs() << "Candidato per essere rimossa Somma inutile \n";
         I.replaceAllUsesWith(I.getOperand(0));
         return true;
       }
     }else if (ConstantInt *firstConst = dyn_cast<ConstantInt>(I.getOperand(0))){
       if (firstConst->getZExtValue() == 0) {
-        //rimuovi l'istruzione
         outs() << "Candidato per essere rimossa Somma inutile \n";
         I.replaceAllUsesWith(I.getOperand(1));
         return true;
@@ -144,14 +142,12 @@ bool algebricIdentitySumSub(Instruction &I) {
   }else if (I.getOpcode() == Instruction::Sub){
     if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
       if (secondConst->getZExtValue() == 0) {
-        //rimuovi l'istruzione
         outs() << "Candidato per essere rimossa Sottrazione inutile \n";
         I.replaceAllUsesWith(I.getOperand(0));
         return true;
       }
     }else if (ConstantInt *firstConst = dyn_cast<ConstantInt>(I.getOperand(0))){
       if (firstConst->getZExtValue() == 0) {
-        //rimuovi l'istruzione
         outs() << "Candidato per essere rimossa Sottrazione inutile \n";
         I.replaceAllUsesWith(I.getOperand(1));
         return true;
