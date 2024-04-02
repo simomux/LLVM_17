@@ -118,7 +118,21 @@ bool strenghtReductionMul(Instruction &I) {
 }
 
 
-bool algebricIdentity(Instruction &I) {
+bool algebricIdentitySumSub(Instruction &I) {
+  // x+0 or 0+x
+  if (I.getOpcode() == Instruction::Add)
+  {
+    /* code */
+  }else if (I.getOpcode() == Instruction::Sub)
+  {
+    /* code */
+  }
+  
+  
+}
+
+bool algebricIdentityMulDiv(Instruction &I) {
+  //x*1 or 1*x
 }
 
 bool runOnBasicBlock(BasicBlock &B) {
