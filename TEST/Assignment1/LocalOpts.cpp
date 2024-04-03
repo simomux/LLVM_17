@@ -181,7 +181,7 @@ bool algebricIdentitySumSub(Instruction &I) {
 
 
 
-/// @brief Chechk for algebric identities optimizations in the IR for multiplication and division
+/// @brief Check for algebric identities optimizations in the IR for multiplication and division
 /// @param I Instruction to be optimized
 /// @return True if there was any change in the IR
 bool algebricIdentityMulDiv(Instruction &I) {
@@ -217,6 +217,10 @@ bool algebricIdentityMulDiv(Instruction &I) {
   return false;
 }
 
+
+/// @brief Check for multiple instructions optimizations in the IR
+/// @param I Instruction to be optimized
+/// @return True if there was any change in the IR
 bool multiInstruction(Instruction &I) {
   ConstantInt *mainInstructionOperand, *nextInstOperand;
 
@@ -229,6 +233,7 @@ bool multiInstruction(Instruction &I) {
 
     // Manage add instruction
     case Instruction::Add:
+      outs() << "Instruction: " << I << "\n";
 
       // Control logic to choose the constant operand
       if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
@@ -243,7 +248,6 @@ bool multiInstruction(Instruction &I) {
 
       if (mainInstructionOperand != nullptr) {
         Instruction *nextInst = I.getNextNonDebugInstruction();
-        outs() << "Next instruction: " << nextInst << "\n";
 
         if (nextInst != nullptr && nextInst->getOpcode() == Instruction::Sub) {
 
@@ -256,6 +260,7 @@ bool multiInstruction(Instruction &I) {
           }
 
           if (nextInstOperand != nullptr) {
+            outs() << "Next instruction: " << *nextInst << "\n";
             if (swap) {
               nextInst->replaceAllUsesWith(I.getOperand(1));
             } else {
@@ -273,14 +278,17 @@ bool multiInstruction(Instruction &I) {
 
     // Manage sub instruction
     case Instruction::Sub:
+      outs() << "Instruction: " << I << "\n";
       // Check if sub instruction has a constant
       if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
         mainInstructionOperand = secondConst;
       }
 
       if (mainInstructionOperand != nullptr) {
+
         // Get next instruction and check if it's an add instruction
         Instruction *nextInst = I.getNextNonDebugInstruction();
+
         if (nextInst != nullptr && nextInst->getOpcode() == Instruction::Add) {
           
           // Check if following add instruction has the same constant in one of its operands 
@@ -298,7 +306,8 @@ bool multiInstruction(Instruction &I) {
           }
 
           // True if I find the same constant in one of the operands of the add instruction
-          if (mainInstructionOperand != nullptr) {
+          if (nextInstOperand != nullptr) {
+            outs() << "Next instruction: " << *nextInst << "\n";
             nextInst->replaceAllUsesWith(I.getOperand(0));
             return true;
           }
@@ -306,13 +315,13 @@ bool multiInstruction(Instruction &I) {
       } else {
         outs() << "Instruction doesn't have a constant operand\n";
       }
-
       break;
 
 
 
     // Manage mul instruction
     case Instruction::Mul:
+      outs() << "Instruction: " << I << "\n";
       // Control logic to choose the constant operand
       if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
         mainInstructionOperand = secondConst;
@@ -326,7 +335,6 @@ bool multiInstruction(Instruction &I) {
 
       if (mainInstructionOperand != nullptr) {
         Instruction *nextInst = I.getNextNonDebugInstruction();
-        outs() << "Next instruction: " << nextInst << "\n";
 
         if (nextInst != nullptr && nextInst->getOpcode() == Instruction::SDiv) {
 
@@ -338,9 +346,7 @@ bool multiInstruction(Instruction &I) {
           }
 
           if (nextInstOperand != nullptr) {
-
-          // Check if the constant in the SDiv instruction is the same as the one in the mul instruction
-          
+            outs() << "Next instruction: " << *nextInst << "\n";
             if (swap) {
               nextInst->replaceAllUsesWith(I.getOperand(1));
             } else {
@@ -359,6 +365,7 @@ bool multiInstruction(Instruction &I) {
 
     // Manage sdiv instruction
     case Instruction::SDiv:
+      outs() << "Instruction: " << I << "\n";
       // Check if sdiv instruction has a constant
       if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
         mainInstructionOperand = secondConst;
@@ -367,9 +374,10 @@ bool multiInstruction(Instruction &I) {
       if (mainInstructionOperand != nullptr) {
         // Get next instruction and check if it's a mul instruction
         Instruction *nextInst = I.getNextNonDebugInstruction();
+
         if (nextInst != nullptr && nextInst->getOpcode() == Instruction::Mul) {
           
-          // Check if following Mul instruction has the same constant in one of its operands 
+          // Check if following mul instruction has the same constant in one of its operands 
           if (ConstantInt *secondConst = dyn_cast<ConstantInt>(nextInst->getOperand(1))) {
             if (secondConst->getValue() == mainInstructionOperand->getValue())
               nextInstOperand = secondConst;
@@ -384,7 +392,8 @@ bool multiInstruction(Instruction &I) {
           }
 
           // True if I find the same constant in one of the operands of the add instruction
-          if (mainInstructionOperand != nullptr) {
+          if (nextInstOperand != nullptr) {
+            outs() << "Next instruction: " << *nextInst << "\n";
             nextInst->replaceAllUsesWith(I.getOperand(0));
             return true;
           }
@@ -392,7 +401,6 @@ bool multiInstruction(Instruction &I) {
       } else {
         outs() << "Instruction doesn't have a constant operand\n";
       }
-
       break;
   }
 
