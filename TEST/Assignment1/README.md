@@ -8,7 +8,7 @@ The goal is to extend `LocalOpts.cpp` from exercise 2 LAB 2, adding the followin
 
 2. Strength Reduction: Transforming an expensive operation into a simpler one:
     - `15 * x = x * 15 -> (x << 4) - x`
-      - If the constant is within the range of +- 1 from a power of 2 after shifting to the closest power, you need to add a sum/subtraction.
+      - If the constant is within the range of ±1 from a power of 2 after shifting to the closest power, you need to add a sum/subtraction.
     - `y = x / 8 -> y = x >> 3`
 
 3. Multi-Instruction Optimization:
