@@ -40,6 +40,8 @@ MODULE_ALIAS_ANALYSIS("globals-aa", GlobalsAA())
 #ifndef MODULE_PASS
 #define MODULE_PASS(NAME, CREATE_PASS)
 #endif
+// Custom AlgebraicIdentity module pass
+MODULE_PASS("algebraic", AlgebraicIdentity())
 MODULE_PASS("always-inline", AlwaysInlinerPass())
 MODULE_PASS("attributor", AttributorPass())
 MODULE_PASS("annotation2metadata", Annotation2MetadataPass())
@@ -78,12 +80,14 @@ MODULE_PASS("invalidate<all>", InvalidateAllAnalysesPass())
 MODULE_PASS("iroutliner", IROutlinerPass())
 MODULE_PASS("print-ir-similarity", IRSimilarityAnalysisPrinterPass(dbgs()))
 // LocalOpts module pass
-MODULE_PASS("localopts", LocalOpts())
+// MODULE_PASS("localopts", LocalOpts())
 MODULE_PASS("lower-global-dtors", LowerGlobalDtorsPass())
 MODULE_PASS("lower-ifunc", LowerIFuncPass())
 MODULE_PASS("lowertypetests", LowerTypeTestsPass())
 MODULE_PASS("metarenamer", MetaRenamerPass())
 MODULE_PASS("mergefunc", MergeFunctionsPass())
+// Custom MultiInstructionOptimization module pass
+MODULE_PASS("multi", MultiInstructionOptimization())
 MODULE_PASS("name-anon-globals", NameAnonGlobalPass())
 MODULE_PASS("no-op-module", NoOpModulePass())
 MODULE_PASS("objc-arc-apelim", ObjCARCAPElimPass())
@@ -112,13 +116,15 @@ MODULE_PASS("scc-oz-module-inliner",
 MODULE_PASS("strip", StripSymbolsPass())
 MODULE_PASS("strip-dead-debug-info", StripDeadDebugInfoPass())
 MODULE_PASS("pseudo-probe", SampleProfileProbePass(TM))
+// Custom StrengthReduction module pass
+MODULE_PASS("strength", StrengthReduction())
 MODULE_PASS("strip-dead-prototypes", StripDeadPrototypesPass())
 MODULE_PASS("strip-debug-declare", StripDebugDeclarePass())
 MODULE_PASS("strip-nondebug", StripNonDebugSymbolsPass())
 MODULE_PASS("strip-nonlinetable-debuginfo", StripNonLineTableDebugInfoPass())
 MODULE_PASS("synthetic-counts-propagation", SyntheticCountsPropagation())
 // Module version of testpass
-MODULE_PASS("testpass", TestPass())
+// MODULE_PASS("testpass", TestPass())
 MODULE_PASS("trigger-crash", TriggerCrashPass())
 MODULE_PASS("verify", VerifierPass())
 MODULE_PASS("view-callgraph", CallGraphViewerPass())

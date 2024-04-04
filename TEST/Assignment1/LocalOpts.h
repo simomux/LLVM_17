@@ -6,9 +6,19 @@
 #include <llvm/IR/Constants.h>
 
 namespace llvm {
-    class LocalOpts : public PassInfoMixin<LocalOpts> {
+    class AlgebraicIdentity : public PassInfoMixin<AlgebraicIdentity> {
     public:
         PreservedAnalyses run(Module &M, ModuleAnalysisManager &AM);
+    };
+
+    class StrengthReduction : public PassInfoMixin<StrengthReduction> {
+    public:
+        PreservedAnalyses run(Module &F, ModuleAnalysisManager &AM);
+    };
+
+    class MultiInstructionOptimization : public PassInfoMixin<MultiInstructionOptimization> {
+    public:
+        PreservedAnalyses run(Module &F, ModuleAnalysisManager &AM);
     };
 } // namespace llvm
 
