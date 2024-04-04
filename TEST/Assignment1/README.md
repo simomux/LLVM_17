@@ -33,9 +33,9 @@ Contains the source code and the definition of each pass.
 
 Copy and paste:
 
-- `PassRegistry.def` in `SRC/llvm/lib/Passes/PassRegistry.def`
-- `LocalOpts.cpp` in `SRC/llvm/lib/Transforms/Utils/LocalOpts.cpp`
-- `LocalOpts.h` in `SRC/llvm/include/llvm/Transforms/Utils/LocalOpts.h`
+- `PassRegistry.def` in `SRC/llvm/lib/Passes/`
+- `LocalOpts.cpp` in `SRC/llvm/lib/Transforms/Utils/`
+- `LocalOpts.h` in `SRC/llvm/include/llvm/Transforms/Utils/`
 
 Then rebuild opt and reinstall with:
 
@@ -50,7 +50,6 @@ To run `AlgebraicIdentity`:
 opt -p algebraic Algebraic_test.ll -o Algebraic_test.optimized.bc
 llvm-dis Algebraic_test.optimized.bc -o Algebraic_test.optimized.ll
 ```
-
 
 To run `StrengthReduction`:
 
