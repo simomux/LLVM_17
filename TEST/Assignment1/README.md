@@ -47,22 +47,31 @@ make install
 To run `AlgebraicIdentity`:
 
 ```Bash
-opt -p algebraic Algebraic_test.ll -o Algebraic_test.optimized.bc
-llvm-dis Algebraic_test.optimized.bc -o Algebraic_test.optimized.ll
+opt -p algebraic foo.ll -o foo.optimized.bc
+llvm-dis foo.optimized.bc -o foo.optimized.ll
 ```
 
 To run `StrengthReduction`:
 
 ```Bash
-opt -p strength Strength_test.ll -o Strength_test.optimized.bc
-llvm-dis Strength_test.optimized.bc -o Strength_test.optimized.ll
+opt -p strength foo.ll -o foo.optimized.bc
+llvm-dis foo.optimized.bc -o foo.optimized.ll
 ```
 
 To run `MultiInstructionOptimization`:
 
 ```Bash
-opt -p multi Multi_test.ll -o Multi_test.optimized.bc
-llvm-dis Multi_test.optimized.bc -o Multi_test.optimized.ll
+opt -p multi foo.ll -o foo.optimized.bc
+llvm-dis foo.optimized.bc -o foo.optimized.ll
 ```
+
+To test all the passes together run:
+
+```Bash
+opt -passes="multi,strength,algebraic" foo.ll -o foo.optimized.bc 
+llvm-dis foo.optimized.bc -o foo.optimized.ll
+```
+
+You should always run `multi` before `strength` to avoid possible error of compatibility between passes.
 
 #### Project members: [Simone Mussini](https://github.com/simomux), [Paride Stomeo](https://github.com/SupremeXGucci420)
