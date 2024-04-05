@@ -25,7 +25,6 @@ bool algebricIdentitySumSub(Instruction &I) {
       if (secondConst->getZExtValue() == 0) {
         outs() << "Fond sum: " << I << "\n";
         I.replaceAllUsesWith(I.getOperand(0));
-        ///TODO: Remove the add instruction
         return true;
       }
 
@@ -34,7 +33,6 @@ bool algebricIdentitySumSub(Instruction &I) {
       if (firstConst->getZExtValue() == 0) {
         outs() << "Fond sum: " << I << "\n";
         I.replaceAllUsesWith(I.getOperand(1));
-        ///TODO: Remove the add instruction
         return true;
       }
     }
@@ -46,7 +44,6 @@ bool algebricIdentitySumSub(Instruction &I) {
       if (secondConst->getZExtValue() == 0) {
         outs() << "Fond subtraction: " << I << "\n";
         I.replaceAllUsesWith(I.getOperand(0));
-        ///TODO: Remove the sub instruction
         return true;
       }
     }
@@ -59,13 +56,14 @@ bool algebricIdentitySumSub(Instruction &I) {
 
 /// @brief Check for algebric identities optimizations in the IR for multiplication and division
 bool algebricIdentityMulDiv(Instruction &I) {
+
+  
   if (Instruction::Mul == I.getOpcode()) {
 
     // Check if the multiplication's second operand is a constant == 1
     if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
       if (secondConst->getValue() == 1) {
         I.replaceAllUsesWith(I.getOperand(0));
-        ///TODO: Remove the mul instruction
         return true;
       }
 
@@ -73,7 +71,6 @@ bool algebricIdentityMulDiv(Instruction &I) {
     } else if (ConstantInt *firstConst = dyn_cast<ConstantInt>(I.getOperand(0))) {
       if (firstConst->getValue() == 1) {
         I.replaceAllUsesWith(I.getOperand(1));
-        ///TODO: Remove the mul instruction
         return true;
       }
     }
@@ -84,7 +81,6 @@ bool algebricIdentityMulDiv(Instruction &I) {
     if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
       if (secondConst->getValue() == 1) {
         I.replaceAllUsesWith(I.getOperand(0));
-        ///TODO: Remove the sdiv instruction
         return true;
       }
     }
@@ -131,14 +127,14 @@ bool strenghtReductionMul(Instruction &I) {
 
     ConstantInt *powerOfTwoOp = nullptr;
 
-    // Needs an offset to keep track if the operand was rounded to the closest power of 2 by +-1. If not rounded, offset is 0
+    // Need a offset to keep track if the operand was rounded to the closest power of 2 by -1 or +1. If not rounded, offset is 0
     int offset = 0;
 
     // Check if second operand is a constant and if it's a power of 2
     // Gives priority to the second operand, since IR syntax states that if it's just a constant it should be on the right-most side (pass can trasnform even multiplication with a constant on the left side, the right side is the priority in case both operands are constants power of 2)
     if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
 
-      // Need to check if value of constant is != 1 to avoid reducing an instruction that should be optimized by algebraic identity
+      // Need to check if value of constant is != 1 to avoid reducing an instruction that should be optimized by algebric identities
       if (secondConst->getValue() != 1) {
         if (secondConst->getValue().isPowerOf2()) {
           powerOfTwoOp = secondConst;
@@ -162,7 +158,7 @@ bool strenghtReductionMul(Instruction &I) {
     if (powerOfTwoOp == nullptr) {
       if (ConstantInt *firstConst = dyn_cast<ConstantInt>(I.getOperand(0))) {
 
-        // Need to check if value of constant is != 1 to avoid reducing an instruction that should be optimized by algebraic identity
+        // Need to check if value of constant is != 1 to avoid reducing an instruction that should be optimized by algebric identities
         if (firstConst->getValue() != 1) {
           if (firstConst->getValue().isPowerOf2()){
             powerOfTwoOp = firstConst;
@@ -217,7 +213,6 @@ bool strenghtReductionMul(Instruction &I) {
         } else {
           I.replaceAllUsesWith(NewInst);
         }
-        ///TODO: Remove the mul instruction
 
         return true;
     } else {
@@ -237,7 +232,6 @@ bool strenghtReductionMul(Instruction &I) {
 
         NewInst->insertAfter(&I);
         I.replaceAllUsesWith(NewInst);
-        ///TODO: Remove the sdiv instruction
         return true;
       } else {
         outs() << "Second operand is not a power of 2\n";
@@ -270,12 +264,13 @@ PreservedAnalyses StrengthReduction::run(Module &M, ModuleAnalysisManager &AM) {
 }
 
 
-//===-- Multi Instruction Optimization pass --------------------------===//
+//===-- Strenght Reduction pass --------------------------===//
 
 
 /// @brief Check for multiple instructions optimizations in the IR
 bool multiInstruction(Instruction &I) {
-  ConstantInt *mainInstructionOperand, *nextInstOperand;
+  ConstantInt *mainInstructionOperand = nullptr;
+  ConstantInt *nextInstOperand = nullptr;
 
   // Need a swap flag to keep track of which operand i choose
   bool swap = false;
