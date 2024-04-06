@@ -21,7 +21,7 @@ make install
 
 This was all done because during this class we will have to create our own optimization passes and rebuild `opt` to test them, so a binary version of LLVM can't be used.
 
-Final build should be around 3.6 - 4 GB.
+Final build should be ~3.6 GB.
 
 All exercises are stored in `TEST` with a brief description of them in a README.
 
