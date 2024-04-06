@@ -17,6 +17,61 @@ The goal is to extend `LocalOpts.cpp` from exercise 2 LAB 2, adding the followin
 
 ## Solution
 
+### [LocalOpts.h](https://github.com/simomux/LLVM_17/blob/testing/TEST/Assignment1/LocalOpts.h)
 
+Contains the class definition for each module pass:
+
+- `AlgebraicIdentity` is the pass for point 1;
+- `StrengthReduction` is the pass for point 2;
+- `MultiInstructionOptimization`is the pass for point 3;
+
+### [LocalOpts.cpp](https://github.com/simomux/LLVM_17/blob/testing/TEST/Assignment1/LocalOpts.cpp)
+
+Contains the source code and the definition of each pass.
+
+### How to test:
+
+Copy and paste:
+
+- `PassRegistry.def` in `SRC/llvm/lib/Passes/`
+- `LocalOpts.cpp` in `SRC/llvm/lib/Transforms/Utils/`
+- `LocalOpts.h` in `SRC/llvm/include/llvm/Transforms/Utils/`
+
+Then rebuild opt and reinstall with:
+
+```Bash
+make opt
+make install
+```
+
+To run `AlgebraicIdentity`:
+
+```Bash
+opt -p algebraic foo.ll -o foo.optimized.bc
+llvm-dis foo.optimized.bc -o foo.optimized.ll
+```
+
+To run `StrengthReduction`:
+
+```Bash
+opt -p strength foo.ll -o foo.optimized.bc
+llvm-dis foo.optimized.bc -o foo.optimized.ll
+```
+
+To run `MultiInstructionOptimization`:
+
+```Bash
+opt -p multi foo.ll -o foo.optimized.bc
+llvm-dis foo.optimized.bc -o foo.optimized.ll
+```
+
+To test all the passes together run:
+
+```Bash
+opt -passes="multi,strength,algebraic" foo.ll -o foo.optimized.bc 
+llvm-dis foo.optimized.bc -o foo.optimized.ll
+```
+
+You should always run `multi` before `strength` to avoid possible error of compatibility between passes.
 
 #### Project members: [Simone Mussini](https://github.com/simomux), [Paride Stomeo](https://github.com/SupremeXGucci420)

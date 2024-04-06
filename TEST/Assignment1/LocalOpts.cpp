@@ -14,10 +14,87 @@ using namespace llvm;
 
 
 
+int64_t getOppositeOpcode(Instruction &I) {
+  switch(I.getOpcode()) {
+    case Instruction::Add:
+      return Instruction::Sub;
+    case Instruction::Sub:
+      return Instruction::Add;
+    case Instruction::Mul:
+      return Instruction::SDiv;
+  }
+  return 0;
+}
+
+
+
+bool isCommutative(Instruction &I) {
+  switch(I.getOpcode()) {
+    case Instruction::Add:
+    case Instruction::Mul:
+      return true;
+  }
+  return false;
+}
+
+
+//===-- Algebraic Identity pass --------------------------===//
+
+
+/// @brief Check for algebric identities optimizations in the IR for sum, subtraction, mul and sdiv
+bool algebraicIdentity(Instruction &I) {
+  // Keeps track of which operand is the constant == 1
+  ConstantInt *mainInstructionConst = nullptr;
+
+  // Keeps track of the other operand
+  Value *mainInstructionValue = nullptr;
+
+  if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
+    if ((secondConst->getValue() == 1 && (I.getOpcode() == Instruction::Mul || I.getOpcode() == Instruction::SDiv)) || (secondConst->getValue() == 0 && (I.getOpcode() == Instruction::Add || I.getOpcode() == Instruction::Sub))) {
+      mainInstructionConst = secondConst;
+      mainInstructionValue = I.getOperand(0);
+    }
+  }
+
+  if (isCommutative(I) && mainInstructionConst == nullptr) {
+    if (ConstantInt *firstConst = dyn_cast<ConstantInt>(I.getOperand(0))) {
+      if ((firstConst->getValue() == 1 && (I.getOpcode() == Instruction::Mul || I.getOpcode() == Instruction::SDiv)) || (firstConst->getValue() == 0 && (I.getOpcode() == Instruction::Add || I.getOpcode() == Instruction::Sub))) {
+        mainInstructionConst = firstConst;
+        mainInstructionValue = I.getOperand(1);
+      }
+    }
+  }
+  
+  if (mainInstructionConst != nullptr) {
+    I.replaceAllUsesWith(mainInstructionValue);
+    return true;
+  }
+  return false;
+}
+
+/// @brief Pass that implements the Algebraic Identity optimization
+PreservedAnalyses AlgebraicIdentity::run(Module &M, ModuleAnalysisManager &AM) {
+  bool modified = false;
+  for (auto &F : M) {
+    for (auto &B : F) {
+      for (auto &I : B) {
+        if (algebraicIdentity(I))  modified = true ;
+      }
+    }
+  }
+  if (modified) {
+    return PreservedAnalyses::none();
+  }
+  return PreservedAnalyses::all();
+}
+
+
+
+//===-- Strenght Reduction pass --------------------------===//
+
+
 /// @brief Transform multiplication and division operations into shifts
-/// @param I Instruction to be optimized
-/// @return True if there was any change in the IR
-bool strenghtReductionMul(Instruction &I) {
+bool strenghtReduction(Instruction &I) {
 
   // Constant power of 2 can be the first operand, the second operand or both. In the last case choose the second one by default (following IR syntax)
   if (I.getOpcode() == Instruction::Mul) {
@@ -140,316 +217,77 @@ bool strenghtReductionMul(Instruction &I) {
 }
 
 
-
-/// @brief Check for algebric identities optimizations in the IR for sum and subtraction
-/// @param I Instruction to be optimized
-/// @return True if there was any change in the IR
-bool algebricIdentitySumSub(Instruction &I) {
-
-  // Check if the sum's second operand is a constant == 0
-  if (I.getOpcode() == Instruction::Add){
-    if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
-      if (secondConst->getZExtValue() == 0) {
-        outs() << "Fond sum: " << I << "\n";
-        I.replaceAllUsesWith(I.getOperand(0));
-        return true;
-      }
-
-    // Check if the sum's first operand is a constant == 0
-    } else if (ConstantInt *firstConst = dyn_cast<ConstantInt>(I.getOperand(0))) {
-      if (firstConst->getZExtValue() == 0) {
-        outs() << "Fond sum: " << I << "\n";
-        I.replaceAllUsesWith(I.getOperand(1));
-        return true;
-      }
-    }
-    
-  // Check if the subtraction's second operand is a constant == 0
-  // Just need to check the second operand, since the first one is the minuend
-  } else if (I.getOpcode() == Instruction::Sub) {
-    if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
-      if (secondConst->getZExtValue() == 0) {
-        outs() << "Fond subtraction: " << I << "\n";
-        I.replaceAllUsesWith(I.getOperand(0));
-        return true;
-      }
-    }
-  }
-  
-  return false;
-}
-
-
-
-/// @brief Check for algebric identities optimizations in the IR for multiplication and division
-/// @param I Instruction to be optimized
-/// @return True if there was any change in the IR
-bool algebricIdentityMulDiv(Instruction &I) {
-
-  
-  if (Instruction::Mul == I.getOpcode()) {
-
-    // Check if the multiplication's second operand is a constant == 1
-    if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
-      if (secondConst->getValue() == 1) {
-        I.replaceAllUsesWith(I.getOperand(0));
-        return true;
-      }
-
-    // Check if the multiplication's first operand is a constant == 1
-    } else if (ConstantInt *firstConst = dyn_cast<ConstantInt>(I.getOperand(0))) {
-      if (firstConst->getValue() == 1) {
-        I.replaceAllUsesWith(I.getOperand(1));
-        return true;
-      }
-    }
-
-  // Check if the division has the second operand == 1
-  // Just need to check the second operand, since the first one is the dividend
-  } else if (Instruction::SDiv == I.getOpcode()) {
-    if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
-      if (secondConst->getValue() == 1) {
-        I.replaceAllUsesWith(I.getOperand(0));
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-
-/// @brief Check for multiple instructions optimizations in the IR
-/// @param I Instruction to be optimized
-/// @return True if there was any change in the IR
-bool multiInstruction(Instruction &I) {
-  ConstantInt *mainInstructionOperand, *nextInstOperand;
-
-  // Need a swap flag to keep track of which operand i choose
-  bool swap = false;
-
-  // Manage optimization based on the type of instruction
-  switch(I.getOpcode()){
-
-
-    // Manage add instruction
-    case Instruction::Add:
-      outs() << "Instruction: " << I << "\n";
-
-      // Control logic to choose the constant operand
-      if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
-        mainInstructionOperand = secondConst;
-      }
-      if (mainInstructionOperand == nullptr) {
-        if (ConstantInt *firstConst = dyn_cast<ConstantInt>(I.getOperand(0))) {
-          mainInstructionOperand = firstConst;
-          swap = true;
-        }
-      }
-
-      if (mainInstructionOperand != nullptr) {
-        Instruction *nextInst = I.getNextNonDebugInstruction();
-
-        if (nextInst != nullptr && nextInst->getOpcode() == Instruction::Sub) {
-
-          // Check if following sub instruction has a constant in one of its operands
-          if (ConstantInt *secondConst = dyn_cast<ConstantInt>(nextInst->getOperand(1))) {
-
-            // Check if the constant in the sub instruction is the same as the one in the add instruction
-            if (mainInstructionOperand->getValue() == secondConst->getValue())
-              nextInstOperand = secondConst;
-          }
-
-          if (nextInstOperand != nullptr) {
-            outs() << "Next instruction: " << *nextInst << "\n";
-            if (swap) {
-              nextInst->replaceAllUsesWith(I.getOperand(1));
-            } else {
-              nextInst->replaceAllUsesWith(I.getOperand(0));
-            }
-            ///TODO: Remove the sub instruction
-            return true;
-          }
-        }
-      } else {
-        outs() << "Instruction doesn't have a constant operand\n";
-      }
-      break;
-
-
-    // Manage sub instruction
-    case Instruction::Sub:
-      outs() << "Instruction: " << I << "\n";
-      // Check if sub instruction has a constant
-      if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
-        mainInstructionOperand = secondConst;
-      }
-
-      if (mainInstructionOperand != nullptr) {
-
-        // Get next instruction and check if it's an add instruction
-        Instruction *nextInst = I.getNextNonDebugInstruction();
-
-        if (nextInst != nullptr && nextInst->getOpcode() == Instruction::Add) {
-          
-          // Check if following add instruction has the same constant in one of its operands 
-          if (ConstantInt *secondConst = dyn_cast<ConstantInt>(nextInst->getOperand(1))) {
-            if (secondConst->getValue() == mainInstructionOperand->getValue())
-              nextInstOperand = secondConst;
-          }
-
-          if (nextInstOperand == nullptr) {
-            if (ConstantInt *secondConst = dyn_cast<ConstantInt>(nextInst->getOperand(0))) {
-              if (secondConst->getValue() == mainInstructionOperand->getValue()) {
-                nextInstOperand = secondConst;
-              }
-            }
-          }
-
-          // True if I find the same constant in one of the operands of the add instruction
-          if (nextInstOperand != nullptr) {
-            outs() << "Next instruction: " << *nextInst << "\n";
-            nextInst->replaceAllUsesWith(I.getOperand(0));
-            return true;
-          }
-        }
-      } else {
-        outs() << "Instruction doesn't have a constant operand\n";
-      }
-      break;
-
-
-
-    // Manage mul instruction
-    case Instruction::Mul:
-      outs() << "Instruction: " << I << "\n";
-      // Control logic to choose the constant operand
-      if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
-        mainInstructionOperand = secondConst;
-      }
-      if (mainInstructionOperand == nullptr) {
-        if (ConstantInt *firstConst = dyn_cast<ConstantInt>(I.getOperand(0))) {
-          mainInstructionOperand = firstConst;
-          swap = true;
-        }
-      }
-
-      if (mainInstructionOperand != nullptr) {
-        Instruction *nextInst = I.getNextNonDebugInstruction();
-
-        if (nextInst != nullptr && nextInst->getOpcode() == Instruction::SDiv) {
-
-          // Check if following SDiv instruction has a constant in one of its operands
-          if (ConstantInt *secondConst = dyn_cast<ConstantInt>(nextInst->getOperand(1))) {
-            if (mainInstructionOperand->getValue() == secondConst->getValue()) {
-              nextInstOperand = secondConst;
-            }
-          }
-
-          if (nextInstOperand != nullptr) {
-            outs() << "Next instruction: " << *nextInst << "\n";
-            if (swap) {
-              nextInst->replaceAllUsesWith(I.getOperand(1));
-            } else {
-              nextInst->replaceAllUsesWith(I.getOperand(0));
-            }
-            ///TODO: Remove the sdiv instruction
-            return true;
-          }
-        }
-      } else {
-        outs() << "Instruction doesn't have a constant operand\n";
-      }
-      break;
-    
-
-
-    // Manage sdiv instruction
-    case Instruction::SDiv:
-      outs() << "Instruction: " << I << "\n";
-      // Check if sdiv instruction has a constant
-      if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
-        mainInstructionOperand = secondConst;
-      }
-
-      if (mainInstructionOperand != nullptr) {
-        // Get next instruction and check if it's a mul instruction
-        Instruction *nextInst = I.getNextNonDebugInstruction();
-
-        if (nextInst != nullptr && nextInst->getOpcode() == Instruction::Mul) {
-          
-          // Check if following mul instruction has the same constant in one of its operands 
-          if (ConstantInt *secondConst = dyn_cast<ConstantInt>(nextInst->getOperand(1))) {
-            if (secondConst->getValue() == mainInstructionOperand->getValue())
-              nextInstOperand = secondConst;
-          }
-
-          if (nextInstOperand == nullptr) {
-            if (ConstantInt *secondConst = dyn_cast<ConstantInt>(nextInst->getOperand(0))) {
-              if (secondConst->getValue() == mainInstructionOperand->getValue()) {
-                nextInstOperand = secondConst;
-              }
-            }
-          }
-
-          // True if I find the same constant in one of the operands of the add instruction
-          if (nextInstOperand != nullptr) {
-            outs() << "Next instruction: " << *nextInst << "\n";
-            nextInst->replaceAllUsesWith(I.getOperand(0));
-            return true;
-          }
-        }
-      } else {
-        outs() << "Instruction doesn't have a constant operand\n";
-      }
-      break;
-  }
-
-  return false;
-}
-
-bool runOnBasicBlock(BasicBlock &B) {
+/// @brief Pass that implements the Strength Reduction optimization
+PreservedAnalyses StrengthReduction::run(Module &M, ModuleAnalysisManager &AM) {
   bool modified = false;
-  for (auto &I : B) {
-      /*switch(I.getOpcode()){
-        case Instruction::Add:
-        case Instruction::Sub:
-          if(algebricIdentitySumSub(I)){ modified = true; }
-          break;
-        case Instruction::Mul:
-        case Instruction::SDiv:
-          //if (algebricIdentityMulDiv(I)) { modified = true; }
-          if (strenghtReductionMul(I)) { modified = true; }
-          break;
-      }*/
-      if (multiInstruction(I)) { modified = true; }
-  }
-  if (modified) {
-    return true;
-  }
-  return false;
-}
-
-
-
-bool runOnFunction(Function &F) {
-  bool Transformed = false;
-
-  for (auto Iter = F.begin(); Iter != F.end(); ++Iter) {
-    if (runOnBasicBlock(*Iter)) {
-      Transformed = true;
+  for (auto &F : M) {
+    for (auto &B : F) {
+      for (auto &I : B) {
+        switch(I.getOpcode()) {
+          case Instruction::Mul:
+          case Instruction::SDiv:
+            if (strenghtReduction(I)) { modified = true; }
+            break;
+        }
+      }
+    }
+    if (modified) {
+      return PreservedAnalyses::none();
     }
   }
-
-  return Transformed;
-}
-
-
-PreservedAnalyses LocalOpts::run(Module &M,
-                                      ModuleAnalysisManager &AM) {
-  for (auto Fiter = M.begin(); Fiter != M.end(); ++Fiter)
-    if (runOnFunction(*Fiter))
-      return PreservedAnalyses::none();
-  
   return PreservedAnalyses::all();
 }
 
+
+//===-- Multi Instruction Optimization pass --------------------------===//
+
+/// @brief Check for multiple instructions optimizations in the IR
+bool multiInstruction(Instruction &I) {
+
+  // Scroll trough the uses of the instruction and check if there is an opposite instruction
+  for (auto &U : I.uses()) {
+    if (auto *User = dyn_cast<Instruction>(U.getUser())) {
+      if (User->getOpcode() == getOppositeOpcode(I)) {
+        outs() << "Found opposite instruction: " << *User << "\n";
+
+        ConstantInt *userInstOperand = nullptr;
+
+        if (ConstantInt *secondConst = dyn_cast<ConstantInt>(User->getOperand(1))) {
+          userInstOperand = secondConst;
+        }
+        if (isCommutative(I) && userInstOperand == nullptr) {
+          if (ConstantInt *firstConst = dyn_cast<ConstantInt>(User->getOperand(0))) {
+            userInstOperand = firstConst;
+          }
+        }
+
+        if (userInstOperand == I.getOperand(0) ^ userInstOperand == I.getOperand(1)) {
+          outs() << "Found opposite instruction with same constant: " << *User << "\n";
+          if (userInstOperand == I.getOperand(0)) {
+            User->replaceAllUsesWith(User->getOperand(0));
+          } else {
+            User->replaceAllUsesWith(User->getOperand(1));
+          }
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+/// @brief Pass that implements Multi Instruction Optimization
+PreservedAnalyses MultiInstructionOptimization::run(Module &M, ModuleAnalysisManager &AM) {
+  bool modified = false;
+  for (auto &F : M) {
+    for (auto &B : F) {
+      for (auto &I : B) {
+        if (multiInstruction(I)) { modified = true; }
+      }
+    }
+    if (modified) {
+      return PreservedAnalyses::none();
+    }
+  }
+  return PreservedAnalyses::all();
+}
