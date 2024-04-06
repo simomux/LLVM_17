@@ -13,77 +13,61 @@
 using namespace llvm;
 
 
-//===-- Algebraic Identity pass --------------------------===//
 
-
-/// @brief Check for algebric identities optimizations in the IR for sum and subtraction
-bool algebricIdentitySumSub(Instruction &I) {
-
-  // Check if the sum's second operand is a constant == 0
-  if (I.getOpcode() == Instruction::Add){
-    if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
-      if (secondConst->getZExtValue() == 0) {
-        outs() << "Fond sum: " << I << "\n";
-        I.replaceAllUsesWith(I.getOperand(0));
-        return true;
-      }
-
-    // Check if the sum's first operand is a constant == 0
-    } else if (ConstantInt *firstConst = dyn_cast<ConstantInt>(I.getOperand(0))) {
-      if (firstConst->getZExtValue() == 0) {
-        outs() << "Fond sum: " << I << "\n";
-        I.replaceAllUsesWith(I.getOperand(1));
-        return true;
-      }
-    }
-    
-  // Check if the subtraction's second operand is a constant == 0
-  // Just need to check the second operand, since the first one is the minuend
-  } else if (I.getOpcode() == Instruction::Sub) {
-    if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
-      if (secondConst->getZExtValue() == 0) {
-        outs() << "Fond subtraction: " << I << "\n";
-        I.replaceAllUsesWith(I.getOperand(0));
-        return true;
-      }
-    }
+int64_t getOppositeOpcode(Instruction &I) {
+  switch(I.getOpcode()) {
+    case Instruction::Add:
+      return Instruction::Sub;
+    case Instruction::Sub:
+      return Instruction::Add;
+    case Instruction::Mul:
+      return Instruction::SDiv;
   }
-  
-  return false;
+  return 0;
 }
 
 
 
-/// @brief Check for algebric identities optimizations in the IR for multiplication and division
-bool algebricIdentityMulDiv(Instruction &I) {
+bool isCommutative(Instruction &I) {
+  switch(I.getOpcode()) {
+    case Instruction::Add:
+    case Instruction::Mul:
+      return true;
+  }
+  return false;
+}
 
+
+//===-- Algebraic Identity pass --------------------------===//
+
+
+/// @brief Check for algebric identities optimizations in the IR for sum, subtraction, mul and sdiv
+bool algebraicIdentity(Instruction &I) {
+  // Keeps track of which operand is the constant == 1
+  ConstantInt *mainInstructionConst = nullptr;
+
+  // Keeps track of the other operand
+  Value *mainInstructionValue = nullptr;
+
+  if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
+    if ((secondConst->getValue() == 1 && (I.getOpcode() == Instruction::Mul || I.getOpcode() == Instruction::SDiv)) || (secondConst->getValue() == 0 && (I.getOpcode() == Instruction::Add || I.getOpcode() == Instruction::Sub))) {
+      mainInstructionConst = secondConst;
+      mainInstructionValue = I.getOperand(0);
+    }
+  }
+
+  if (isCommutative(I) && mainInstructionConst == nullptr) {
+    if (ConstantInt *firstConst = dyn_cast<ConstantInt>(I.getOperand(0))) {
+      if ((firstConst->getValue() == 1 && (I.getOpcode() == Instruction::Mul || I.getOpcode() == Instruction::SDiv)) || (firstConst->getValue() == 0 && (I.getOpcode() == Instruction::Add || I.getOpcode() == Instruction::Sub))) {
+        mainInstructionConst = firstConst;
+        mainInstructionValue = I.getOperand(1);
+      }
+    }
+  }
   
-  if (Instruction::Mul == I.getOpcode()) {
-
-    // Check if the multiplication's second operand is a constant == 1
-    if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
-      if (secondConst->getValue() == 1) {
-        I.replaceAllUsesWith(I.getOperand(0));
-        return true;
-      }
-
-    // Check if the multiplication's first operand is a constant == 1
-    } else if (ConstantInt *firstConst = dyn_cast<ConstantInt>(I.getOperand(0))) {
-      if (firstConst->getValue() == 1) {
-        I.replaceAllUsesWith(I.getOperand(1));
-        return true;
-      }
-    }
-
-  // Check if the division has the second operand == 1
-  // Just need to check the second operand, since the first one is the dividend
-  } else if (Instruction::SDiv == I.getOpcode()) {
-    if (ConstantInt *secondConst = dyn_cast<ConstantInt>(I.getOperand(1))) {
-      if (secondConst->getValue() == 1) {
-        I.replaceAllUsesWith(I.getOperand(0));
-        return true;
-      }
-    }
+  if (mainInstructionConst != nullptr) {
+    I.replaceAllUsesWith(mainInstructionValue);
+    return true;
   }
   return false;
 }
@@ -94,21 +78,12 @@ PreservedAnalyses AlgebraicIdentity::run(Module &M, ModuleAnalysisManager &AM) {
   for (auto &F : M) {
     for (auto &B : F) {
       for (auto &I : B) {
-        switch(I.getOpcode()) {
-          case Instruction::Add:
-          case Instruction::Sub:
-            if(algebricIdentitySumSub(I)){ modified = true; }
-            break;
-          case Instruction::Mul:
-          case Instruction::SDiv:
-            if (algebricIdentityMulDiv(I)) { modified = true; }
-            break;
-        }
+        if (algebraicIdentity(I))  modified = true ;
       }
     }
-    if (modified) {
-      return PreservedAnalyses::none();
-    }
+  }
+  if (modified) {
+    return PreservedAnalyses::none();
   }
   return PreservedAnalyses::all();
 }
@@ -119,7 +94,7 @@ PreservedAnalyses AlgebraicIdentity::run(Module &M, ModuleAnalysisManager &AM) {
 
 
 /// @brief Transform multiplication and division operations into shifts
-bool strenghtReductionMul(Instruction &I) {
+bool strenghtReduction(Instruction &I) {
 
   // Constant power of 2 can be the first operand, the second operand or both. In the last case choose the second one by default (following IR syntax)
   if (I.getOpcode() == Instruction::Mul) {
@@ -251,7 +226,7 @@ PreservedAnalyses StrengthReduction::run(Module &M, ModuleAnalysisManager &AM) {
         switch(I.getOpcode()) {
           case Instruction::Mul:
           case Instruction::SDiv:
-            if (strenghtReductionMul(I)) { modified = true; }
+            if (strenghtReduction(I)) { modified = true; }
             break;
         }
       }
@@ -265,33 +240,6 @@ PreservedAnalyses StrengthReduction::run(Module &M, ModuleAnalysisManager &AM) {
 
 
 //===-- Multi Instruction Optimization pass --------------------------===//
-
-
-
-int64_t getOppositeOpcode(Instruction &I) {
-  switch(I.getOpcode()) {
-    case Instruction::Add:
-      return Instruction::Sub;
-    case Instruction::Sub:
-      return Instruction::Add;
-    case Instruction::Mul:
-      return Instruction::SDiv;
-  }
-  return 0;
-}
-
-
-
-bool isCommutative(Instruction &I) {
-  switch(I.getOpcode()) {
-    case Instruction::Add:
-    case Instruction::Mul:
-      return true;
-  }
-  return false;
-}
-
-
 
 /// @brief Check for multiple instructions optimizations in the IR
 bool multiInstruction(Instruction &I) {
@@ -328,7 +276,7 @@ bool multiInstruction(Instruction &I) {
   return false;
 }
 
-/// @brief Pass that implements the Strength Reduction optimization
+/// @brief Pass that implements Multi Instruction Optimization
 PreservedAnalyses MultiInstructionOptimization::run(Module &M, ModuleAnalysisManager &AM) {
   bool modified = false;
   for (auto &F : M) {
