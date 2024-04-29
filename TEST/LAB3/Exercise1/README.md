@@ -3,15 +3,15 @@
 Create a new pass that prints out every use for each instruction.
 If the instruction uses another one print out the declaration of that registry.
 
-File `LoopWalk.h` was included in `SRC/llvm/lib/Passes/PassBuilder.cpp` with:
+File `PrintChains.h` was included in `SRC/llvm/lib/Passes/PassBuilder.cpp` with:
 
 ```Cpp
-#include "llvm/Transforms/Utils/LoopWalk.h"
+#include "llvm/Transforms/Utils/PrintChains.h"
 ```
 
-`LoopWalk.cpp` was added to `SRC/llvm/lib/Transforms/Utils/CMakeLists.txt`.
+`PrintChains.cpp` was added to `SRC/llvm/lib/Transforms/Utils/CMakeLists.txt`.
 
-And the pass `loopwalk` was added to `SRC/llvm/lib/Passes/PassRegistry.def` as follow:
+And the pass `printchains` was added to `SRC/llvm/lib/Passes/PassRegistry.def` as follow:
 
 ```text
 MODULE_PASS("loopwalk", LoopWalk())
@@ -21,8 +21,8 @@ MODULE_PASS("loopwalk", LoopWalk())
 
 To test the pass apply the modification above to each file and paste the following files in the following directories:
 
-- `LoopWalk.h` in `SRC/llvm/include/llvm/Transforms/Utils/`;
-- `LoopWalk.cpp` in `SRC/llvm/lib/Transforms/Utils/`.
+- `PrintChains.h` in `SRC/llvm/include/llvm/Transforms/Utils/`;
+- `PrintChains.cpp` in `SRC/llvm/lib/Transforms/Utils/`.
 
 Now you have to re-build the `opt` binary with:
 
@@ -39,7 +39,7 @@ make install
 Finally, run:
 
 ```bash
-opt -p loopwalk Test.ll -o Test.bc
+opt -p printchains Test.ll -o Test.bc
 ```
 
 And you should see the output on terminal.
