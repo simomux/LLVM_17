@@ -1,4 +1,4 @@
-### LAB 3 of my middle-end compilers class
+### Exercise 1 LAB 3 of my middle-end compilers class
 
 Create a new pass that prints out every use for each instruction.
 If the instruction uses another one print out the declaration of that registry.
