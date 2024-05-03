@@ -1,20 +1,23 @@
-### LAB 3 of my middle-end compilers class
+### Exercise 2 LAB 3 of my middle-end compilers class
 
-Create a new pass that prints out every use for each instruction.
-If the instruction uses another one print out the declaration of that registry.
+Create a loop pass that checks if the loop is in simplified form, and if so, prints the following information:
 
-File `LoopWalk.h` was included in `SRC/llvm/lib/Passes/PassBuilder.cpp` with:
+- Pre-header
+- Header
+- Blocks
 
-```Cpp
+File `LoopWalk.h` was included in `SRC/llvm/lib/Passes/PassBuilder.cpp` with the following code:
+
+```cpp
 #include "llvm/Transforms/Utils/LoopWalk.h"
 ```
 
 `LoopWalk.cpp` was added to `SRC/llvm/lib/Transforms/Utils/CMakeLists.txt`.
 
-And the pass `loopwalk` was added to `SRC/llvm/lib/Passes/PassRegistry.def` as follow:
+And the pass `loopwalk` was added to `SRC/llvm/lib/Passes/PassRegistry.def` as follows:
 
 ```text
-MODULE_PASS("loopwalk", LoopWalk())
+LOOP_PASS("loopwalk", LoopWalk())
 ```
 
 ### How-to
@@ -39,7 +42,7 @@ make install
 Finally, run:
 
 ```bash
-opt -p loopwalk Test.ll -o Test.bc
+opt -p loopwalk Loop.ll -o Loop.bc
 ```
 
 And you should see the output on terminal.

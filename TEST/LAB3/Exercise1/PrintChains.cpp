@@ -1,4 +1,4 @@
-#include "llvm/Transforms/Utils/LoopWalk.h"
+#include "llvm/Transforms/Utils/PrintChains.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/InstrTypes.h"
 
@@ -34,7 +34,7 @@ bool runOnBasicBlock(BasicBlock &B) {
     return false;
 }
 
-PreservedAnalyses LoopWalk::run(Module &M, ModuleAnalysisManager &AM) {
+PreservedAnalyses PrintChains::run(Module &M, ModuleAnalysisManager &AM) {
   bool modified = false;
   for (auto &F : M) {
     for (auto &B : F) {
