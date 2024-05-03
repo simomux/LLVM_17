@@ -5,19 +5,23 @@ using namespace llvm;
 PreservedAnalyses LoopWalk::run(Loop &L, LoopAnalysisManager &AM, LoopStandardAnalysisResults &AR, LPMUpdater &U) {
   // Check if the loop is in simplified form
   if (L.isLoopSimplifyForm()) {
+    outs() << "LoopWalk: Loop is in simplified form\n";
+    
+    outs() << "\nLoop pre-header: ";
+    L.getLoopPreheader()->print(outs());
 
-    // Get the preheader, header and blocks of the loop
-    L.getLoopPreheader();
-    L.getHeader();
-    L.getBlocks();
+    outs() << "\n\nLoop header:";
+    L.getHeader()->print(outs());
 
     // Go through all the blocks in the loop
+    outs() << "\n\nLoop blocks:";
     for (auto &BB : L.blocks()) {
-      outs();
+      BB->print(outs());
     }
 
     return PreservedAnalyses::none();
   } else {
-      return PreservedAnalyses::all();
+    outs() << "LoopWalk: Loop is not in simplified form\n";
+    return PreservedAnalyses::all();
   }
 }

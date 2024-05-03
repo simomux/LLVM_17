@@ -1,5 +1,5 @@
-#ifndef LLVM_TRANSFORMS_LOOPWALK_H
-#define LLVM_TRANSFORMS_LOOPWALK_H
+#ifndef LLVM_TRANSFORMS_UTILS_LOOPWALK_H
+#define LLVM_TRANSFORMS_UTILS_LOOPWALK_H
 
 #include "llvm/IR/PassManager.h"
 #include "llvm/Transforms/Scalar/LoopPassManager.h"
