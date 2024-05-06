@@ -74,4 +74,4 @@ llvm-dis foo.optimized.bc -o foo.optimized.ll
 
 You should always run `multi` before `strength` to avoid possible error of compatibility between passes.
 
-#### Project members: [Simone Mussini](https://github.com/simomux), [Paride Stomeo](https://github.com/SupremeXGucci420)
+#### Project members: [Simone Mussini](https://github.com/simomux), [Paride Stomeo](https://github.com/paridestomeo)
