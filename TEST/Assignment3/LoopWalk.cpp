@@ -1,4 +1,6 @@
 #include "llvm/Transforms/Utils/LoopWalk.h" 
+#include "llvm/IR/Dominators.h"
+#include "llvm/Analysis/ValueTracking.h"
 #include <unordered_set>
 
 using namespace llvm;
@@ -27,11 +29,10 @@ void printLoopInfo(llvm::Loop &L) {
 
 // True if the operand is defined inside the loop
 bool isOperandLoopInvariant(llvm::Value *operand, Loop &L, std::unordered_set<llvm::Instruction*> &loopInvariantInstructions) {
-  ///TODO: forse si può migliorare la logica in sta funzione
-  if (isa<llvm::Constant>(operand) || isa<llvm::Argument>(operand)) {
+  if (llvm::isa<llvm::Constant>(operand) || llvm::isa<llvm::Argument>(operand)) {
     return true;
   }
-  if (llvm::Instruction *instruction = dyn_cast<llvm::Instruction>(operand)) {
+  if (llvm::Instruction *instruction = llvm::dyn_cast<llvm::Instruction>(operand)) {
     if (!L.contains(instruction->getParent()) || loopInvariantInstructions.count(instruction)) {
       return true;
     }
@@ -40,19 +41,17 @@ bool isOperandLoopInvariant(llvm::Value *operand, Loop &L, std::unordered_set<ll
 }
 
 bool isInstructionLoopInvariant(llvm::Instruction *I, Loop &L, std::unordered_set<llvm::Instruction*> &loopInvariantInstructions) {
-  ///TODO: fix di questo if perché così fa schifo
   if (isOperandLoopInvariant(I->getOperand(0), L, loopInvariantInstructions) || (I->isBinaryOp()) ? isOperandLoopInvariant(I->getOperand(1), L, loopInvariantInstructions) : false) {
-    outs() << "This instruction can be removed: " << *I << "\n";
+    outs() << *I << "is loop invariant.\n";
     return true;
   } else {
-    outs() << "This instruction can't be removed: " << *I << "\n";
+    outs() << *I << "is not loop invariant\n";
     return false;
   }
 }
 
 PreservedAnalyses LoopWalk::run(Loop &L, LoopAnalysisManager &AM, LoopStandardAnalysisResults &AR, LPMUpdater &U) {
 
-  // Print loop information
   printLoopInfo(L);
 
   std::unordered_set<llvm::Instruction*> loopInvariantInstructions{};
@@ -67,7 +66,36 @@ PreservedAnalyses LoopWalk::run(Loop &L, LoopAnalysisManager &AM, LoopStandardAn
   }
 
   // At this point you should a have all the LI instructions in the loopInvariantInstructions vector
-  ///TODO: controllo con dominance treee
+  DominatorTree &DT = AR.DT;
 
+  //DT.print(outs());
+
+
+  llvm::SmallVector<BasicBlock *> exits{};
+
+  L.getUniqueExitBlocks(exits);
+
+  outs() << "\n\n";
+  outs() << "Number of exits: " << exits.size() << " \n";
+  for (uint i = 0; i < exits.size(); i++) {
+    outs() << *exits[i] << "\n";
+  }
+
+  bool allDominators;
+  for (auto &BB : L.blocks()) {
+    allDominators = true;
+    for (BasicBlock *exit : exits) {
+      allDominators &= DT.dominates(BB, exit);
+    }
+    if (allDominators) {
+      for (llvm::Instruction &I : *BB) {
+        if (loopInvariantInstructions.count(&I) && isSafeToSpeculativelyExecute(&I)) {
+          outs() << "This instruction can be moved: " << I << "\n";
+          ///TODO: Move the instruction
+        }
+      }
+    }
+  }
+  
   return PreservedAnalyses::all();
 }
