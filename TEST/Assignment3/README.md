@@ -62,7 +62,7 @@ And install with:
 make install
 ```
 
-## Testing
+## Run the pass
 
 You can test by running:
 
@@ -87,6 +87,18 @@ And finally running the custom pass with:
 ```bash
 opt -passes=loopwalk LICM.ll -o LICM.bc
 ```
+
+## Check results
+
+To check the results of the pass, first disassamble the bytecode generated from the IR:
+
+```bash
+llvm-dis LICM.bc -o LICMOptimized.ll
+```
+
+Then check the resulting files.
+The instruction should all have been moved inside the pre-header.
+You can find a copy of the resulting file [here](https://github.com/simomux/LLVM_17/blob/main/TEST/Assignment3/LICMOptimized.ll).
 
 ## Team
 

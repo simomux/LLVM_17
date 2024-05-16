@@ -41,13 +41,14 @@ bool isOperandLoopInvariant(llvm::Value *operand, Loop &L, std::unordered_set<ll
 }
 
 bool isInstructionLoopInvariant(llvm::Instruction *I, Loop &L, std::unordered_set<llvm::Instruction*> &loopInvariantInstructions) {
-  if (isOperandLoopInvariant(I->getOperand(0), L, loopInvariantInstructions) || (I->isBinaryOp()) ? isOperandLoopInvariant(I->getOperand(1), L, loopInvariantInstructions) : false) {
-    outs() << *I << "is loop invariant.\n";
-    return true;
-  } else {
-    outs() << *I << "is not loop invariant\n";
-    return false;
+  for (auto &operand : I->operands()) {
+    if (!isOperandLoopInvariant(operand, L, loopInvariantInstructions)) {
+      outs() << "Not Loop invariant: " << *I << "\n";
+      return false;
+    }
   }
+  outs() << "Loop invariant: " << *I << "\n";
+  return true;
 }
 
 PreservedAnalyses LoopWalk::run(Loop &L, LoopAnalysisManager &AM, LoopStandardAnalysisResults &AR, LPMUpdater &U) {
@@ -81,7 +82,11 @@ PreservedAnalyses LoopWalk::run(Loop &L, LoopAnalysisManager &AM, LoopStandardAn
     outs() << *exits[i] << "\n";
   }
 
+
+
   bool allDominators;
+  std::vector<llvm::Instruction*> instructionsToMove{};
+
   for (auto &BB : L.blocks()) {
     allDominators = true;
     for (BasicBlock *exit : exits) {
@@ -89,13 +94,29 @@ PreservedAnalyses LoopWalk::run(Loop &L, LoopAnalysisManager &AM, LoopStandardAn
     }
     if (allDominators) {
       for (llvm::Instruction &I : *BB) {
-        if (loopInvariantInstructions.count(&I) && isSafeToSpeculativelyExecute(&I)) {
+        // Check if I is in the loop invariant set and if it's safe to move
+        if (loopInvariantInstructions.count(&I) && isSafeToSpeculativelyExecute(&I) && I.getOpcode()) {
           outs() << "This instruction can be moved: " << I << "\n";
-          ///TODO: Move the instruction
+          instructionsToMove.push_back(&I);
         }
       }
     }
   }
   
+  
+  BasicBlock *prehead = L.getLoopPreheader();
+  for (llvm::Instruction *I : instructionsToMove) {
+    I->moveBefore(prehead->getTerminator());
+  }
+  
+
+
+  /*
+  • Sono loop invariant
+  • Si trovano in blocchi che dominano tutte le uscite del loop
+  • Assegnano un valore a variabili non assegnate altrove nel loop
+  • Si trovano in blocchi che dominano tutti i blocchi nel loop che usano lavariabile a cui si sta assegnando un valore*/
+
+
   return PreservedAnalyses::all();
 }
