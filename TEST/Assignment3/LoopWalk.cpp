@@ -85,7 +85,7 @@ PreservedAnalyses LoopWalk::run(Loop &L, LoopAnalysisManager &AM, LoopStandardAn
 
 
   bool allDominators;
-  std::vector<llvm::Instruction*> instructionsToMove{};
+  std::unordered_set<llvm::Instruction*> instructionsToMove{};
 
   for (auto &BB : L.blocks()) {
     allDominators = true;
@@ -95,14 +95,48 @@ PreservedAnalyses LoopWalk::run(Loop &L, LoopAnalysisManager &AM, LoopStandardAn
     if (allDominators) {
       for (llvm::Instruction &I : *BB) {
         // Check if I is in the loop invariant set and if it's safe to move
-        if (loopInvariantInstructions.count(&I) && isSafeToSpeculativelyExecute(&I) && I.getOpcode()) {
-          outs() << "This instruction can be moved: " << I << "\n";
-          instructionsToMove.push_back(&I);
+        if (loopInvariantInstructions.count(&I) && !I.mayHaveSideEffects()) {
+          instructionsToMove.insert(&I);
+          loopInvariantInstructions.erase(&I);
         }
       }
     }
   }
-  
+
+  outs() << "Instructions that still have to be checked: ";
+  for (auto i : loopInvariantInstructions) {
+    outs() << "\n";
+    i->print(outs());
+  }
+
+  outs() << "\n\n\n";
+  // Check if instructions are dead
+  bool isDead;
+  for(auto &instr : loopInvariantInstructions) {
+    isDead = true;
+    //outs() << "Instruction: " << *instr << "\n";
+
+    // If L does not contain an use of the instruction, the use must be after the loop, so the instruction is not dead
+    // IF L contains all the uses of instr, the instruction is dead
+    for(auto &use : instr->uses()) {
+      //outs() << "Use: " << *use.getUser() << "\n";
+      if (llvm::Instruction *instruction = llvm::dyn_cast<llvm::Instruction>(use.getUser())) {
+        //outs() << "Parent: " << *instruction->getParent() << "\n";
+        isDead &= L.contains(instruction->getParent());
+      }
+    }
+
+    if (!isDead) {
+      if (!instructionsToMove.count(instr)) {
+        instructionsToMove.insert(instr);
+      }
+    }
+  }
+
+  for(auto &inst : instructionsToMove) {
+    outs() << "Instruction to move: " << *inst << "\n";
+  }
+
   
   BasicBlock *prehead = L.getLoopPreheader();
   for (llvm::Instruction *I : instructionsToMove) {
@@ -118,5 +152,5 @@ PreservedAnalyses LoopWalk::run(Loop &L, LoopAnalysisManager &AM, LoopStandardAn
   • Si trovano in blocchi che dominano tutti i blocchi nel loop che usano lavariabile a cui si sta assegnando un valore*/
 
 
-  return PreservedAnalyses::all();
+  return PreservedAnalyses::none();
 }
