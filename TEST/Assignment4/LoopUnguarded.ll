@@ -1,93 +1,62 @@
-; ModuleID = 'LoopUnguarded.c'
+; ModuleID = 'Foo.bc'
 source_filename = "LoopUnguarded.c"
 target datalayout = "e-m:o-i64:64-i128:128-n32:64-S128"
 target triple = "arm64-apple-macosx14.0.0"
 
 ; Function Attrs: noinline nounwind ssp uwtable(sync)
 define void @calculateVectors(i32 noundef %0, ptr noundef %1, ptr noundef %2, ptr noundef %3, ptr noundef %4) #0 !dbg !9 {
-  %6 = alloca i32, align 4
-  %7 = alloca ptr, align 8
-  %8 = alloca ptr, align 8
-  %9 = alloca ptr, align 8
-  %10 = alloca ptr, align 8
-  %11 = alloca i32, align 4
-  store i32 %0, ptr %6, align 4
-  store ptr %1, ptr %7, align 8
-  store ptr %2, ptr %8, align 8
-  store ptr %3, ptr %9, align 8
-  store ptr %4, ptr %10, align 8
-  store i32 0, ptr %11, align 4, !dbg !12
-  br label %12, !dbg !13
+  br label %6, !dbg !12
 
-12:                                               ; preds = %33, %5
-  %13 = load i32, ptr %11, align 4, !dbg !14
-  %14 = load i32, ptr %6, align 4, !dbg !15
-  %15 = icmp slt i32 %13, %14, !dbg !16
-  br i1 %15, label %16, label %36, !dbg !17
+6:                                                ; preds = %19, %5
+  %.0 = phi i32 [ 0, %5 ], [ %20, %19 ], !dbg !13
+  %7 = icmp slt i32 %.0, %0, !dbg !14
+  br i1 %7, label %8, label %21, !dbg !15
 
-16:                                               ; preds = %12
-  %17 = load ptr, ptr %8, align 8, !dbg !18
-  %18 = load i32, ptr %11, align 4, !dbg !19
-  %19 = sext i32 %18 to i64, !dbg !18
-  %20 = getelementptr inbounds i32, ptr %17, i64 %19, !dbg !18
-  %21 = load i32, ptr %20, align 4, !dbg !18
-  %22 = sdiv i32 1, %21, !dbg !20
-  %23 = load ptr, ptr %9, align 8, !dbg !21
-  %24 = load i32, ptr %11, align 4, !dbg !22
-  %25 = sext i32 %24 to i64, !dbg !21
-  %26 = getelementptr inbounds i32, ptr %23, i64 %25, !dbg !21
-  %27 = load i32, ptr %26, align 4, !dbg !21
-  %28 = mul nsw i32 %22, %27, !dbg !23
-  %29 = load ptr, ptr %7, align 8, !dbg !24
-  %30 = load i32, ptr %11, align 4, !dbg !25
-  %31 = sext i32 %30 to i64, !dbg !24
-  %32 = getelementptr inbounds i32, ptr %29, i64 %31, !dbg !24
-  store i32 %28, ptr %32, align 4, !dbg !26
-  br label %33, !dbg !27
+8:                                                ; preds = %6
+  %9 = sext i32 %.0 to i64, !dbg !16
+  %10 = getelementptr inbounds i32, ptr %2, i64 %9, !dbg !16
+  %11 = load i32, ptr %10, align 4, !dbg !16
+  %12 = sdiv i32 1, %11, !dbg !17
+  %13 = sext i32 %.0 to i64, !dbg !18
+  %14 = getelementptr inbounds i32, ptr %3, i64 %13, !dbg !18
+  %15 = load i32, ptr %14, align 4, !dbg !18
+  %16 = mul nsw i32 %12, %15, !dbg !19
+  %17 = sext i32 %.0 to i64, !dbg !20
+  %18 = getelementptr inbounds i32, ptr %1, i64 %17, !dbg !20
+  store i32 %16, ptr %18, align 4, !dbg !21
+  br label %19, !dbg !22
 
-33:                                               ; preds = %16
-  %34 = load i32, ptr %11, align 4, !dbg !28
-  %35 = add nsw i32 %34, 1, !dbg !28
-  store i32 %35, ptr %11, align 4, !dbg !28
-  br label %12, !dbg !17, !llvm.loop !29
+19:                                               ; preds = %8
+  %20 = add nsw i32 %.0, 1, !dbg !23
+  br label %6, !dbg !15, !llvm.loop !24
 
-36:                                               ; preds = %12
-  store i32 0, ptr %11, align 4, !dbg !31
-  br label %37, !dbg !32
+21:                                               ; preds = %6
+  br label %22, !dbg !26
 
-37:                                               ; preds = %57, %36
-  %38 = load i32, ptr %11, align 4, !dbg !33
-  %39 = load i32, ptr %6, align 4, !dbg !34
-  %40 = icmp slt i32 %38, %39, !dbg !35
-  br i1 %40, label %41, label %60, !dbg !36
+22:                                               ; preds = %34, %21
+  %.1 = phi i32 [ 0, %21 ], [ %35, %34 ], !dbg !27
+  %23 = icmp slt i32 %.1, %0, !dbg !28
+  br i1 %23, label %24, label %36, !dbg !29
 
-41:                                               ; preds = %37
-  %42 = load ptr, ptr %7, align 8, !dbg !37
-  %43 = load i32, ptr %11, align 4, !dbg !38
-  %44 = sext i32 %43 to i64, !dbg !37
-  %45 = getelementptr inbounds i32, ptr %42, i64 %44, !dbg !37
-  %46 = load i32, ptr %45, align 4, !dbg !37
-  %47 = load ptr, ptr %9, align 8, !dbg !39
-  %48 = load i32, ptr %11, align 4, !dbg !40
-  %49 = sext i32 %48 to i64, !dbg !39
-  %50 = getelementptr inbounds i32, ptr %47, i64 %49, !dbg !39
-  %51 = load i32, ptr %50, align 4, !dbg !39
-  %52 = add nsw i32 %46, %51, !dbg !41
-  %53 = load ptr, ptr %10, align 8, !dbg !42
-  %54 = load i32, ptr %11, align 4, !dbg !43
-  %55 = sext i32 %54 to i64, !dbg !42
-  %56 = getelementptr inbounds i32, ptr %53, i64 %55, !dbg !42
-  store i32 %52, ptr %56, align 4, !dbg !44
-  br label %57, !dbg !45
+24:                                               ; preds = %22
+  %25 = sext i32 %.1 to i64, !dbg !30
+  %26 = getelementptr inbounds i32, ptr %1, i64 %25, !dbg !30
+  %27 = load i32, ptr %26, align 4, !dbg !30
+  %28 = sext i32 %.1 to i64, !dbg !31
+  %29 = getelementptr inbounds i32, ptr %3, i64 %28, !dbg !31
+  %30 = load i32, ptr %29, align 4, !dbg !31
+  %31 = add nsw i32 %27, %30, !dbg !32
+  %32 = sext i32 %.1 to i64, !dbg !33
+  %33 = getelementptr inbounds i32, ptr %4, i64 %32, !dbg !33
+  store i32 %31, ptr %33, align 4, !dbg !34
+  br label %34, !dbg !35
 
-57:                                               ; preds = %41
-  %58 = load i32, ptr %11, align 4, !dbg !46
-  %59 = add nsw i32 %58, 1, !dbg !46
-  store i32 %59, ptr %11, align 4, !dbg !46
-  br label %37, !dbg !36, !llvm.loop !47
+34:                                               ; preds = %24
+  %35 = add nsw i32 %.1, 1, !dbg !36
+  br label %22, !dbg !29, !llvm.loop !37
 
-60:                                               ; preds = %37
-  ret void, !dbg !48
+36:                                               ; preds = %22
+  ret void, !dbg !38
 }
 
 attributes #0 = { noinline nounwind ssp uwtable(sync) "frame-pointer"="non-leaf" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="apple-m1" "target-features"="+aes,+crc,+dotprod,+fp-armv8,+fp16fml,+fullfp16,+lse,+neon,+ras,+rcpc,+rdm,+sha2,+sha3,+v8.1a,+v8.2a,+v8.3a,+v8.4a,+v8.5a,+v8a,+zcm,+zcz" }
@@ -108,40 +77,30 @@ attributes #0 = { noinline nounwind ssp uwtable(sync) "frame-pointer"="non-leaf"
 !9 = distinct !DISubprogram(name: "calculateVectors", scope: !7, file: !7, line: 1, type: !10, scopeLine: 1, flags: DIFlagPrototyped, spFlags: DISPFlagDefinition, unit: !6)
 !10 = !DISubroutineType(types: !11)
 !11 = !{}
-!12 = !DILocation(line: 3, column: 10, scope: !9)
-!13 = !DILocation(line: 3, column: 8, scope: !9)
-!14 = !DILocation(line: 3, column: 15, scope: !9)
-!15 = !DILocation(line: 3, column: 19, scope: !9)
-!16 = !DILocation(line: 3, column: 17, scope: !9)
-!17 = !DILocation(line: 3, column: 3, scope: !9)
-!18 = !DILocation(line: 4, column: 16, scope: !9)
-!19 = !DILocation(line: 4, column: 18, scope: !9)
-!20 = !DILocation(line: 4, column: 14, scope: !9)
-!21 = !DILocation(line: 4, column: 23, scope: !9)
-!22 = !DILocation(line: 4, column: 25, scope: !9)
-!23 = !DILocation(line: 4, column: 21, scope: !9)
-!24 = !DILocation(line: 4, column: 5, scope: !9)
-!25 = !DILocation(line: 4, column: 7, scope: !9)
-!26 = !DILocation(line: 4, column: 10, scope: !9)
-!27 = !DILocation(line: 5, column: 3, scope: !9)
-!28 = !DILocation(line: 3, column: 23, scope: !9)
-!29 = distinct !{!29, !17, !27, !30}
-!30 = !{!"llvm.loop.mustprogress"}
-!31 = !DILocation(line: 7, column: 10, scope: !9)
-!32 = !DILocation(line: 7, column: 8, scope: !9)
-!33 = !DILocation(line: 7, column: 15, scope: !9)
-!34 = !DILocation(line: 7, column: 19, scope: !9)
-!35 = !DILocation(line: 7, column: 17, scope: !9)
-!36 = !DILocation(line: 7, column: 3, scope: !9)
-!37 = !DILocation(line: 8, column: 12, scope: !9)
-!38 = !DILocation(line: 8, column: 14, scope: !9)
-!39 = !DILocation(line: 8, column: 19, scope: !9)
-!40 = !DILocation(line: 8, column: 21, scope: !9)
-!41 = !DILocation(line: 8, column: 17, scope: !9)
-!42 = !DILocation(line: 8, column: 5, scope: !9)
-!43 = !DILocation(line: 8, column: 7, scope: !9)
-!44 = !DILocation(line: 8, column: 10, scope: !9)
-!45 = !DILocation(line: 9, column: 3, scope: !9)
-!46 = !DILocation(line: 7, column: 23, scope: !9)
-!47 = distinct !{!47, !36, !45, !30}
-!48 = !DILocation(line: 10, column: 3, scope: !9)
+!12 = !DILocation(line: 3, column: 8, scope: !9)
+!13 = !DILocation(line: 3, scope: !9)
+!14 = !DILocation(line: 3, column: 17, scope: !9)
+!15 = !DILocation(line: 3, column: 3, scope: !9)
+!16 = !DILocation(line: 4, column: 16, scope: !9)
+!17 = !DILocation(line: 4, column: 14, scope: !9)
+!18 = !DILocation(line: 4, column: 23, scope: !9)
+!19 = !DILocation(line: 4, column: 21, scope: !9)
+!20 = !DILocation(line: 4, column: 5, scope: !9)
+!21 = !DILocation(line: 4, column: 10, scope: !9)
+!22 = !DILocation(line: 5, column: 3, scope: !9)
+!23 = !DILocation(line: 3, column: 23, scope: !9)
+!24 = distinct !{!24, !15, !22, !25}
+!25 = !{!"llvm.loop.mustprogress"}
+!26 = !DILocation(line: 7, column: 8, scope: !9)
+!27 = !DILocation(line: 7, scope: !9)
+!28 = !DILocation(line: 7, column: 17, scope: !9)
+!29 = !DILocation(line: 7, column: 3, scope: !9)
+!30 = !DILocation(line: 8, column: 12, scope: !9)
+!31 = !DILocation(line: 8, column: 19, scope: !9)
+!32 = !DILocation(line: 8, column: 17, scope: !9)
+!33 = !DILocation(line: 8, column: 5, scope: !9)
+!34 = !DILocation(line: 8, column: 10, scope: !9)
+!35 = !DILocation(line: 9, column: 3, scope: !9)
+!36 = !DILocation(line: 7, column: 23, scope: !9)
+!37 = distinct !{!37, !29, !35, !25}
+!38 = !DILocation(line: 10, column: 3, scope: !9)

@@ -4,8 +4,6 @@ This assignment involves implementing a custom loop pass for Loop Fusion.
 
 ## Algorithm
 
-
-
 ## Solution
 
 File `LFusion.h` was included in `SRC/llvm/lib/Passes/PassBuilder.cpp` with the following code:
@@ -24,8 +22,8 @@ FUNCTION_PASS("lfusion", LFusion())
 
 You can find the solution here:
 
-* [LFusion.cpp](https://github.com/simomux/LLVM_17/blob/c108417a3bbab5545b7fed1c2dc0f75b7432d83f/TEST/Assignment3/LoopWalk.cpp).
-* [LFusion.h](https://github.com/simomux/LLVM_17/blob/0e81133baf086c595d61ff524ce518b63a3696b5/TEST/Assignment3/LoopWalk.h)
+* [LFusion.cpp](https://github.com/simomux/LLVM_17/blob/a3f0ed97d372149775a020613a7015b8a697fc51/TEST/Assignment4/LFusion.cpp).
+* [LFusion.h](https://github.com/simomux/LLVM_17/blob/a3f0ed97d372149775a020613a7015b8a697fc51/TEST/Assignment4/LFusion.h)
 
 Paste the following files in the following directories:
 
@@ -46,7 +44,12 @@ You can test by running:
 clang -O0 -Rpass=".*" -emit-llvm -S -c -Xclang -disable-O0-optnone Foo.c -o Foo.ll
 ```
 
-Then running the custom pass with:
+```bash
+opt -p mem2reg Foo.ll -o Foo.bc && llvm-dis Foo.bc -o Foo.ll
+```
+
+
+Finally run the custom pass with:
 
 ```bash
 opt -passes=lfusion Foo.ll -o Foo.bc
