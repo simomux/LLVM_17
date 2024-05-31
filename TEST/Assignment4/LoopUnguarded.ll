@@ -33,30 +33,34 @@ define void @calculateVectors(i32 noundef %0, ptr noundef %1, ptr noundef %2, pt
 21:                                               ; preds = %6
   br label %22, !dbg !26
 
-22:                                               ; preds = %34, %21
-  %.1 = phi i32 [ 0, %21 ], [ %35, %34 ], !dbg !27
+22:                                               ; preds = %38, %21
+  %.1 = phi i32 [ 0, %21 ], [ %39, %38 ], !dbg !27
   %23 = icmp slt i32 %.1, %0, !dbg !28
-  br i1 %23, label %24, label %36, !dbg !29
+  br i1 %23, label %24, label %40, !dbg !29
 
 24:                                               ; preds = %22
   %25 = sext i32 %.1 to i64, !dbg !30
-  %26 = getelementptr inbounds i32, ptr %1, i64 %25, !dbg !30
+  %26 = getelementptr inbounds i32, ptr %3, i64 %25, !dbg !30
   %27 = load i32, ptr %26, align 4, !dbg !30
-  %28 = sext i32 %.1 to i64, !dbg !31
-  %29 = getelementptr inbounds i32, ptr %3, i64 %28, !dbg !31
-  %30 = load i32, ptr %29, align 4, !dbg !31
-  %31 = add nsw i32 %27, %30, !dbg !32
+  %28 = add nsw i32 %.1, %27, !dbg !31
+  %29 = sext i32 %28 to i64, !dbg !32
+  %30 = getelementptr inbounds i32, ptr %1, i64 %29, !dbg !32
+  %31 = load i32, ptr %30, align 4, !dbg !32
   %32 = sext i32 %.1 to i64, !dbg !33
-  %33 = getelementptr inbounds i32, ptr %4, i64 %32, !dbg !33
-  store i32 %31, ptr %33, align 4, !dbg !34
-  br label %34, !dbg !35
+  %33 = getelementptr inbounds i32, ptr %3, i64 %32, !dbg !33
+  %34 = load i32, ptr %33, align 4, !dbg !33
+  %35 = add nsw i32 %31, %34, !dbg !34
+  %36 = sext i32 %.1 to i64, !dbg !35
+  %37 = getelementptr inbounds i32, ptr %4, i64 %36, !dbg !35
+  store i32 %35, ptr %37, align 4, !dbg !36
+  br label %38, !dbg !37
 
-34:                                               ; preds = %24
-  %35 = add nsw i32 %.1, 1, !dbg !36
-  br label %22, !dbg !29, !llvm.loop !37
+38:                                               ; preds = %24
+  %39 = add nsw i32 %.1, 1, !dbg !38
+  br label %22, !dbg !29, !llvm.loop !39
 
-36:                                               ; preds = %22
-  ret void, !dbg !38
+40:                                               ; preds = %22
+  ret void, !dbg !40
 }
 
 attributes #0 = { noinline nounwind ssp uwtable(sync) "frame-pointer"="non-leaf" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="apple-m1" "target-features"="+aes,+crc,+dotprod,+fp-armv8,+fp16fml,+fullfp16,+lse,+neon,+ras,+rcpc,+rdm,+sha2,+sha3,+v8.1a,+v8.2a,+v8.3a,+v8.4a,+v8.5a,+v8a,+zcm,+zcz" }
@@ -71,9 +75,9 @@ attributes #0 = { noinline nounwind ssp uwtable(sync) "frame-pointer"="non-leaf"
 !3 = !{i32 8, !"PIC Level", i32 2}
 !4 = !{i32 7, !"uwtable", i32 1}
 !5 = !{i32 7, !"frame-pointer", i32 1}
-!6 = distinct !DICompileUnit(language: DW_LANG_C11, file: !7, producer: "clang version 17.0.6 (https://github.com/simomux/LLVM_17.git 51024e0c6951617afcef9e3df7e8bd60c8bcc8ed)", isOptimized: false, runtimeVersion: 0, emissionKind: NoDebug, splitDebugInlining: false, nameTableKind: Apple, sysroot: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk", sdk: "MacOSX14.5.sdk")
+!6 = distinct !DICompileUnit(language: DW_LANG_C11, file: !7, producer: "clang version 17.0.6 (https://github.com/simomux/LLVM_17.git d8596a1d82a39536b8c1a2a9b456cd5a9d9cfa09)", isOptimized: false, runtimeVersion: 0, emissionKind: NoDebug, splitDebugInlining: false, nameTableKind: Apple, sysroot: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk", sdk: "MacOSX14.5.sdk")
 !7 = !DIFile(filename: "LoopUnguarded.c", directory: "/Users/simone/LLVM_17/TEST/Assignment4")
-!8 = !{!"clang version 17.0.6 (https://github.com/simomux/LLVM_17.git 51024e0c6951617afcef9e3df7e8bd60c8bcc8ed)"}
+!8 = !{!"clang version 17.0.6 (https://github.com/simomux/LLVM_17.git d8596a1d82a39536b8c1a2a9b456cd5a9d9cfa09)"}
 !9 = distinct !DISubprogram(name: "calculateVectors", scope: !7, file: !7, line: 1, type: !10, scopeLine: 1, flags: DIFlagPrototyped, spFlags: DISPFlagDefinition, unit: !6)
 !10 = !DISubroutineType(types: !11)
 !11 = !{}
@@ -95,12 +99,14 @@ attributes #0 = { noinline nounwind ssp uwtable(sync) "frame-pointer"="non-leaf"
 !27 = !DILocation(line: 7, scope: !9)
 !28 = !DILocation(line: 7, column: 17, scope: !9)
 !29 = !DILocation(line: 7, column: 3, scope: !9)
-!30 = !DILocation(line: 8, column: 12, scope: !9)
-!31 = !DILocation(line: 8, column: 19, scope: !9)
-!32 = !DILocation(line: 8, column: 17, scope: !9)
-!33 = !DILocation(line: 8, column: 5, scope: !9)
-!34 = !DILocation(line: 8, column: 10, scope: !9)
-!35 = !DILocation(line: 9, column: 3, scope: !9)
-!36 = !DILocation(line: 7, column: 23, scope: !9)
-!37 = distinct !{!37, !29, !35, !25}
-!38 = !DILocation(line: 10, column: 3, scope: !9)
+!30 = !DILocation(line: 8, column: 16, scope: !9)
+!31 = !DILocation(line: 8, column: 15, scope: !9)
+!32 = !DILocation(line: 8, column: 12, scope: !9)
+!33 = !DILocation(line: 8, column: 24, scope: !9)
+!34 = !DILocation(line: 8, column: 22, scope: !9)
+!35 = !DILocation(line: 8, column: 5, scope: !9)
+!36 = !DILocation(line: 8, column: 10, scope: !9)
+!37 = !DILocation(line: 9, column: 3, scope: !9)
+!38 = !DILocation(line: 7, column: 23, scope: !9)
+!39 = distinct !{!39, !29, !37, !25}
+!40 = !DILocation(line: 10, column: 3, scope: !9)
