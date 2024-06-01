@@ -54,7 +54,11 @@ Finally run the custom pass with:
 opt -passes=lfusion Foo.ll -o Foo.bc
 ```
 
-We've uploaded 2 test files, one containing 2 ungarded loops, and the other one with 2 guarded ones, since depending on this the steps of the algortihm vary.
+We've uploaded 2 test files, one containing 2 unguarded loops, and the other one with 2 guarded ones, since depending on this the steps of the algortihm vary:
+
+* [LoopUnguarded.ll](https://github.com/simomux/LLVM_17/blob/cfb065723ca5d197adc5b86022c75297dc6b40a2/TEST/Assignment4/LoopUnguarded.ll)
+* [LoopGuarded.ll](https://github.com/simomux/LLVM_17/blob/cfb065723ca5d197adc5b86022c75297dc6b40a2/TEST/Assignment4/LoopGuarded.ll)
+
 
 ## Team
 
