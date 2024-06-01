@@ -48,7 +48,6 @@ clang -O0 -Rpass=".*" -emit-llvm -S -c -Xclang -disable-O0-optnone Foo.c -o Foo.
 opt -p mem2reg Foo.ll -o Foo.bc && llvm-dis Foo.bc -o Foo.ll
 ```
 
-
 Finally run the custom pass with:
 
 ```bash
