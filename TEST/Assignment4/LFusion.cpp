@@ -101,7 +101,7 @@ bool checkNegativeDependencies(std::pair<llvm::Loop*, llvm::Loop*> loop) {
             }
           }
         }
-      } 
+      }
     }
   }
 
@@ -128,7 +128,6 @@ void loopFusion(llvm::Loop* &L1, llvm::Loop* &L2){
 
   secondLoopIV->replaceAllUsesWith(firstLoopIV);
 
-  ///TODO: code below this is just testing, need to make this work
 
   // Modify CFG as follows:
   // header 1 --> L2 exit
@@ -138,35 +137,25 @@ void loopFusion(llvm::Loop* &L1, llvm::Loop* &L2){
   
   auto header1 = L1->getHeader();
   auto header2 = L2->getHeader();
-
   auto latch1 = L1->getLoopLatch();
   auto latch2 = L2->getLoopLatch();
+  auto exit = L2->getUniqueExitBlock();
 
-  llvm::outs() << "Header 1: " << *header1 << "\n";
-  llvm::outs() << "Header 2: " << *header2 << "\n";
-  llvm::outs() << "Latch 1: " << *latch1 << "\n";
-  llvm::outs() << "Latch 2: " << *latch2 << "\n";
+  llvm::BasicBlock* lastL1BodyBB = L1->getBlocks().drop_back(1).back();
 
-  // moving induction var to header1 
-  indvar2->moveBefore(indvar1);
-  indvar1->replaceAllUsesWith(indvar2);
-  indvar1->eraseFromParent();
+  // Attach body 2 to body 1
+  lastL1BodyBB->getTerminator()->setSuccessor(0, L2->getBlocks().drop_front(1).drop_back(1).front());
 
-  // update phi instruction 
-  indvar2->replaceIncomingBlockWith(preheader2, preheader1);
+  // Attach latch 1 to body 2
+  L2->getBlocks().drop_front(1).drop_back(1).back()->getTerminator()->setSuccessor(0, latch1);
 
-  header2->replaceAllUsesWith(header1);
+  // Attach header 2 to latch 2
+  llvm::BranchInst::Create(latch2, header2->getTerminator());
+  header2->getTerminator()->eraseFromParent();
 
-  auto *successor = header1;
-  while (successor != nullptr && successor->getSingleSuccessor() != latch1) {
-      successor = header1->getSingleSuccessor(); //probabile errore loro, sarebbe meglio successor->getSingleSuccessor() secondo me
-  }
-
-  // make header2 the successor of header1
-    auto * instr = successor->getTerminator();
-    auto *br = dyn_cast<BranchInst>(instr);
-    br->setSuccessor(0, header2);
-
+  // Attach header 1 to L2 exit
+  llvm::BranchInst::Create(L1->getBlocks().drop_front(1).front(), exit, header1->back().getOperand(0), header1->getTerminator());
+  header1->getTerminator()->eraseFromParent();
 }
 
 // Main function
@@ -197,6 +186,11 @@ llvm::PreservedAnalyses llvm::LFusion::run(Function &F, FunctionAnalysisManager 
 
     llvm::outs() << "Loops can be fused\n";
     loopFusion(loop.first, loop.second);
+
+  llvm::outs() << "Function after fusion:\n";
+  for (auto &BB : F) {
+    llvm::outs() << BB << "\n";
+  }
 
     modified = 1;
   }
