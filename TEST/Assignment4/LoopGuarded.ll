@@ -79,9 +79,9 @@ attributes #0 = { noinline nounwind ssp uwtable(sync) "frame-pointer"="non-leaf"
 !3 = !{i32 8, !"PIC Level", i32 2}
 !4 = !{i32 7, !"uwtable", i32 1}
 !5 = !{i32 7, !"frame-pointer", i32 1}
-!6 = distinct !DICompileUnit(language: DW_LANG_C11, file: !7, producer: "clang version 17.0.6 (https://github.com/simomux/LLVM_17.git d8596a1d82a39536b8c1a2a9b456cd5a9d9cfa09)", isOptimized: false, runtimeVersion: 0, emissionKind: NoDebug, splitDebugInlining: false, nameTableKind: Apple, sysroot: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk", sdk: "MacOSX14.5.sdk")
+!6 = distinct !DICompileUnit(language: DW_LANG_C11, file: !7, producer: "clang version 17.0.6 (https://github.com/simomux/LLVM_17.git 48350d3603ba5887a7b62677ebd80cbedb62411b)", isOptimized: false, runtimeVersion: 0, emissionKind: NoDebug, splitDebugInlining: false, nameTableKind: Apple, sysroot: "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk", sdk: "MacOSX14.5.sdk")
 !7 = !DIFile(filename: "LoopGuarded.c", directory: "/Users/simone/LLVM_17/TEST/Assignment4")
-!8 = !{!"clang version 17.0.6 (https://github.com/simomux/LLVM_17.git d8596a1d82a39536b8c1a2a9b456cd5a9d9cfa09)"}
+!8 = !{!"clang version 17.0.6 (https://github.com/simomux/LLVM_17.git 48350d3603ba5887a7b62677ebd80cbedb62411b)"}
 !9 = distinct !DISubprogram(name: "calcoli", scope: !7, file: !7, line: 1, type: !10, scopeLine: 1, flags: DIFlagPrototyped, spFlags: DISPFlagDefinition, unit: !6)
 !10 = !DISubroutineType(types: !11)
 !11 = !{}
