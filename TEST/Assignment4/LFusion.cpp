@@ -220,7 +220,7 @@ llvm::PreservedAnalyses llvm::LFusion::run(Function &F, FunctionAnalysisManager 
     if (!checkNegativeDependencies(loop)) continue;
     
 
-    llvm::outs() << "Loops can be fused\n";
+    llvm::outs() << "\nLoops can be fused\n";
     loopFusion(loop.first, loop.second);
 
     /* llvm::outs() << "Function after fusion:\n";
