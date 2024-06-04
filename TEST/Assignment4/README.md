@@ -54,38 +54,28 @@ make opt && make install
 
 ## Run the pass
 
-You can test by running:
+To run the pass on all files simply run:
 
 ```bash
-clang -O0 -Rpass=".*" -emit-llvm -S -c -Xclang -disable-O0-optnone Foo.c -o Foo.ll
+make all
 ```
 
-```bash
-opt -p mem2reg Foo.ll -o Foo.bc && llvm-dis Foo.bc -o Foo.ll
-```
+To run the pass on individual files check [makefile](https://github.com/simomux/LLVM_17/blob/06b5d8da686215954231e1062e23625ad758cf0a/TEST/Assignment4/Makefile).
 
-Finally run the custom pass with:
+The pass should be able to optimize multiple pairs of loops in the same function.
 
-```bash
-opt -passes=lfusion Foo.ll -o Foo.bc
-```
+We haven't tested if the pass is able to fuse multiple loops, so we can't guarantee that.
 
 We've uploaded 2 test files, one containing 2 unguarded loops, and the other one with 2 guarded ones, since depending on this the steps of the algortihm vary:
 
 * [LoopUnguarded.ll](https://github.com/simomux/LLVM_17/blob/cfb065723ca5d197adc5b86022c75297dc6b40a2/TEST/Assignment4/LoopUnguarded.ll)
 * [LoopGuarded.ll](https://github.com/simomux/LLVM_17/blob/cfb065723ca5d197adc5b86022c75297dc6b40a2/TEST/Assignment4/LoopGuarded.ll)
+* [MultipleUnguarded.ll](https://github.com/simomux/LLVM_17/blob/06b5d8da686215954231e1062e23625ad758cf0a/TEST/Assignment4/MultipleUnguarded.ll)
+* [MultipleGuarded.ll](https://github.com/simomux/LLVM_17/blob/06b5d8da686215954231e1062e23625ad758cf0a/TEST/Assignment4/MultipleGuarded.ll)
 
 ## Check results
 
-To check the results of the pass, first disassamble the bytecode generated from the IR:
-
-```bash
-llvm-dis Foo.bc -o Results.ll
-```
-
-Then check the resulting files.
-
-CFG have been rearragend as follows:
+CFG for each pair of mergeable loops have been rearragend as follows:
 
 ### Unguarded loops
 
@@ -109,7 +99,8 @@ Modified files:
 
 * [UnguardedResults.ll](https://github.com/simomux/LLVM_17/blob/main/TEST/Assignment4/UnguardedResults.ll).
 * [GuardedResults.ll](https://github.com/simomux/LLVM_17/blob/main/TEST/Assignment4/GuardedResults.ll).
-
+* [MultipleUnguardedResults.ll](https://github.com/simomux/LLVM_17/blob/06b5d8da686215954231e1062e23625ad758cf0a/TEST/Assignment4/MultipleUnguardedResults.ll)
+* [MultipleGuardedResults.ll](https://github.com/simomux/LLVM_17/blob/06b5d8da686215954231e1062e23625ad758cf0a/TEST/Assignment4/MultipleGuardedResults.ll)
 
 ## Team
 
