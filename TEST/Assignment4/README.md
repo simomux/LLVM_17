@@ -102,6 +102,15 @@ Modified files:
 * [MultipleUnguardedResults.ll](https://github.com/simomux/LLVM_17/blob/06b5d8da686215954231e1062e23625ad758cf0a/TEST/Assignment4/MultipleUnguardedResults.ll)
 * [MultipleGuardedResults.ll](https://github.com/simomux/LLVM_17/blob/06b5d8da686215954231e1062e23625ad758cf0a/TEST/Assignment4/MultipleGuardedResults.ll)
 
+You can even run the following commands to generate an image for the CFG by using `graphviz`:
+
+```bash
+opt -p dot-cfg -disable-output foo.ll
+dot -Tpng -o foo.png foo.dot
+```
+
+Then check the results by opening the file `foo.png`.
+
 ## Team
 
 * Simone Mussini ([GitHub](https://github.com/simomux))

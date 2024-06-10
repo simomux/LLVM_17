@@ -5,3 +5,5 @@ INSTALL/
 *.vscode
 *.bc
 *.log
+*.dot
+*.png
